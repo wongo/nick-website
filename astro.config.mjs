@@ -5,11 +5,11 @@ export default defineConfig({
   base: '/',
   output: 'static',
   build: {
-    assets: '_assets',
+    assets: 'assets',
   },
   vite: {
     build: {
-      assetsDir: '_assets',
+      assetsDir: 'assets',
     },
   },
 });
