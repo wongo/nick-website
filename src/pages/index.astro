@@ -1,0 +1,378 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const projects = [
+  {
+    name: 'my-minimax-mcp',
+    desc: '把 MiniMax AI 包裝成 MCP server，讓 Claude Code 可以直接呼叫使用。TypeScript / Node.js。',
+    lang: 'TypeScript',
+    url: 'https://github.com/wongo/my-minimax-mcp',
+    stars: null,
+  },
+  {
+    name: 'travelhelper',
+    desc: '地陪配對平台，連接旅客與當地導遊。TypeScript / PostgreSQL / Docker。',
+    lang: 'TypeScript',
+    url: 'https://github.com/wongo/travelhelper',
+    stars: null,
+  },
+  {
+    name: 'todaylunch',
+    desc: '台北午餐選擇困難症的救命工具，幫你快速決定今天吃什麼。純前端，響應式。',
+    lang: 'JavaScript',
+    url: 'https://github.com/wongo/todaylunch',
+    stars: null,
+  },
+  {
+    name: 'myDashBoard',
+    desc: 'Astro 6 + React + Tailwind 打造的專案狀態總覽 Dashboard。',
+    lang: 'TypeScript',
+    url: 'https://github.com/wongo/myDashBoard',
+    stars: null,
+  },
+  {
+    name: 'tapfun-daily-report',
+    desc: '遊戲營運 KPI 每日報表自動化，省去人工整理 Excel 的時間。Python。',
+    lang: 'Python',
+    url: 'https://github.com/wongo/tapfun-daily-report',
+    stars: null,
+  },
+  {
+    name: 'agent-elves',
+    desc: 'Claude Code 的 ASCII art 辦公室動畫插件，枯燥的 coding 時光多點樂趣。Python。',
+    lang: 'Python',
+    url: 'https://github.com/wongo/agent-elves',
+    stars: null,
+  },
+];
+---
+
+<BaseLayout title="Nick — Software Engineer & Builder · nickdevlab">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-eyebrow">
+      <span class="dot"></span>
+      <span class="status-text">Available for projects</span>
+    </div>
+    <h1 class="hero-title">
+      Hi, I'm <span class="name">Nick</span>.
+    </h1>
+    <p class="hero-sub">
+      Software Engineer&nbsp;&middot;&nbsp;Based in Tokyo<br />
+      Building tools, automations, and things that work.
+    </p>
+    <div class="hero-links">
+      <a href="https://github.com/wongo" class="btn-primary" target="_blank" rel="noopener">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+        GitHub
+      </a>
+      <a href="#contact" class="btn-secondary">Get in touch</a>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <p class="section-tag">About</p>
+    <h2>About Me</h2>
+    <div class="about-grid">
+      <div class="about-text">
+        <p>
+          我是 Nick，在東京生活的台灣軟體工程師。從系統底層到前端介面都有經驗，語言涵蓋 TypeScript、Python、C++、Dart。
+        </p>
+        <p>
+          興趣是寫工具、解決問題、把複雜的東西變簡單。目前在 Ubitus 工作，參與雲端遊戲平台的開發，同時也持續維護自己的各種業餘專案。
+        </p>
+        <p>
+          熟悉 Astro、React、Node.js、PostgreSQL、Docker，也寫過 Flutter App 和 Unity 小遊戲。偶爾折騰 AI 相關的專案。
+        </p>
+      </div>
+      <div class="about-stack">
+        <p class="stack-label">Tech Stack</p>
+        <div class="stack-tags">
+          {['TypeScript', 'Python', 'C++', 'Dart', 'Astro', 'React', 'Node.js', 'PostgreSQL', 'Docker', 'Flutter', 'Unity'].map(t => (
+            <span class="tag">{t}</span>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section id="projects">
+    <p class="section-tag">Work</p>
+    <h2>Featured Projects</h2>
+    <div class="projects-grid">
+      {projects.map(p => (
+        <a href={p.url} class="project-card" target="_blank" rel="noopener">
+          <div class="project-top">
+            <span class="project-name">{p.name}</span>
+            <svg class="ext-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </div>
+          <p class="project-desc">{p.desc}</p>
+          <span class="project-lang">{p.lang}</span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <p class="section-tag">Contact</p>
+    <h2>Get In Touch</h2>
+    <div class="contact-grid">
+      <div class="contact-item">
+        <span class="contact-label">Email</span>
+        <a href="mailto:wongo.w@gmail.com">wongo.w@gmail.com</a>
+      </div>
+      <div class="contact-item">
+        <span class="contact-label">GitHub</span>
+        <a href="https://github.com/wongo" target="_blank" rel="noopener">@wongo</a>
+      </div>
+      <div class="contact-item">
+        <span class="contact-label">Telegram</span>
+        <a href="https://t.me/nickwongo" target="_blank" rel="noopener">@nickwongo</a>
+      </div>
+    </div>
+  </section>
+
+</BaseLayout>
+
+<style>
+  /* HERO */
+  .hero {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 7rem 1.5rem 5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 8px #22c55e;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .hero-title {
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+    margin-bottom: 1.2rem;
+  }
+
+  .name {
+    color: var(--accent);
+  }
+
+  .hero-sub {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+  }
+
+  .hero-links {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--accent);
+    color: #fff;
+    padding: 0.65rem 1.4rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background 0.2s, transform 0.1s;
+  }
+
+  .btn-primary:hover {
+    background: var(--accent2);
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    color: var(--text);
+    padding: 0.65rem 1.4rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    transition: border-color 0.2s, transform 0.1s;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--text-muted);
+    transform: translateY(-1px);
+  }
+
+  /* ABOUT */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 3rem;
+    align-items: start;
+  }
+
+  .about-text p {
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+  }
+
+  .about-text p:last-child {
+    margin-bottom: 0;
+  }
+
+  .about-stack {
+    min-width: 160px;
+  }
+
+  .stack-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+  }
+
+  .stack-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .tag {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    color: var(--text-muted);
+  }
+
+  /* PROJECTS */
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+
+  .project-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem;
+    transition: border-color 0.2s, transform 0.15s;
+  }
+
+  .project-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  .project-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.6rem;
+  }
+
+  .project-name {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .ext-icon {
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+
+  .project-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    flex: 1;
+    margin-bottom: 1rem;
+  }
+
+  .project-lang {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--accent);
+  }
+
+  /* CONTACT */
+  .contact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .contact-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .contact-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+  }
+
+  .contact-item a {
+    font-size: 0.95rem;
+    color: var(--text);
+    transition: color 0.2s;
+  }
+
+  .contact-item a:hover {
+    color: var(--accent);
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 640px) {
+    .about-grid {
+      grid-template-columns: 1fr;
+    }
+    .about-stack {
+      order: -1;
+    }
+    .hero {
+      padding: 5rem 1.5rem 3.5rem;
+    }
+  }
+</style>
