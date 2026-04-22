@@ -1,50 +1,5 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-
-const projects = [
-  {
-    name: 'my-minimax-mcp',
-    desc: '把 MiniMax AI 包裝成 MCP server，讓 Claude Code 可以直接呼叫使用。TypeScript / Node.js。',
-    lang: 'TypeScript',
-    url: 'https://github.com/wongo/my-minimax-mcp',
-    stars: null,
-  },
-  {
-    name: 'travelhelper',
-    desc: '地陪配對平台，連接旅客與當地導遊。TypeScript / PostgreSQL / Docker。',
-    lang: 'TypeScript',
-    url: 'https://github.com/wongo/travelhelper',
-    stars: null,
-  },
-  {
-    name: 'todaylunch',
-    desc: '台北午餐選擇困難症的救命工具，幫你快速決定今天吃什麼。純前端，響應式。',
-    lang: 'JavaScript',
-    url: 'https://github.com/wongo/todaylunch',
-    stars: null,
-  },
-  {
-    name: 'myDashBoard',
-    desc: 'Astro 6 + React + Tailwind 打造的專案狀態總覽 Dashboard。',
-    lang: 'TypeScript',
-    url: 'https://github.com/wongo/myDashBoard',
-    stars: null,
-  },
-  {
-    name: 'tapfun-daily-report',
-    desc: '遊戲營運 KPI 每日報表自動化，省去人工整理 Excel 的時間。Python。',
-    lang: 'Python',
-    url: 'https://github.com/wongo/tapfun-daily-report',
-    stars: null,
-  },
-  {
-    name: 'agent-elves',
-    desc: 'Claude Code 的 ASCII art 辦公室動畫插件，枯燥的 coding 時光多點樂趣。Python。',
-    lang: 'Python',
-    url: 'https://github.com/wongo/agent-elves',
-    stars: null,
-  },
-];
 ---
 
 <BaseLayout title="Nick — Software Engineer & Builder · nickdevlab">
@@ -78,13 +33,13 @@ const projects = [
     <div class="about-grid">
       <div class="about-text">
         <p>
-          我是 Nick，在東京生活的台灣軟體工程師。從系統底層到前端介面都有經驗，語言涵蓋 TypeScript、Python、C++、Dart。
+          I'm Nick, a Taiwan-born software engineer now based in Tokyo. I build everything from system-level code to user-facing interfaces — TypeScript, Python, C++, Dart, you name it.
         </p>
         <p>
-          興趣是寫工具、解決問題、把複雜的東西變簡單。目前在 Ubitus 工作，參與雲端遊戲平台的開發，同時也持續維護自己的各種業餘專案。
+          I enjoy writing tools, solving problems, and making complex things simple. Currently working at Ubitus on cloud gaming platform infrastructure, while maintaining a range of personal projects on the side.
         </p>
         <p>
-          熟悉 Astro、React、Node.js、PostgreSQL、Docker，也寫過 Flutter App 和 Unity 小遊戲。偶爾折騰 AI 相關的專案。
+          Familiar with Astro, React, Node.js, PostgreSQL, Docker, Flutter, and Unity. Occasionally tinker with AI-related projects.
         </p>
       </div>
       <div class="about-stack">
@@ -95,24 +50,6 @@ const projects = [
           ))}
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- PROJECTS -->
-  <section id="projects">
-    <p class="section-tag">Work</p>
-    <h2>Featured Projects</h2>
-    <div class="projects-grid">
-      {projects.map(p => (
-        <a href={p.url} class="project-card" target="_blank" rel="noopener">
-          <div class="project-top">
-            <span class="project-name">{p.name}</span>
-            <svg class="ext-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-          </div>
-          <p class="project-desc">{p.desc}</p>
-          <span class="project-lang">{p.lang}</span>
-        </a>
-      ))}
     </div>
   </section>
 
@@ -276,61 +213,6 @@ const projects = [
     padding: 0.25rem 0.6rem;
     border-radius: 4px;
     color: var(--text-muted);
-  }
-
-  /* PROJECTS */
-  .projects-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1rem;
-  }
-
-  .project-card {
-    display: flex;
-    flex-direction: column;
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 1.25rem;
-    transition: border-color 0.2s, transform 0.15s;
-  }
-
-  .project-card:hover {
-    border-color: var(--accent);
-    transform: translateY(-2px);
-  }
-
-  .project-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.6rem;
-  }
-
-  .project-name {
-    font-family: var(--font-mono);
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--text);
-  }
-
-  .ext-icon {
-    color: var(--text-muted);
-    flex-shrink: 0;
-  }
-
-  .project-desc {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    line-height: 1.5;
-    flex: 1;
-    margin-bottom: 1rem;
-  }
-
-  .project-lang {
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    color: var(--accent);
   }
 
   /* CONTACT */
