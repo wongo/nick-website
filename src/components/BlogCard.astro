@@ -1,0 +1,84 @@
+---
+// BlogCard — Card for a blog post
+interface Props {
+  title: string;
+  description: string;
+  pubDate: Date;
+  tags: string[];
+  slug: string;
+}
+
+const { title, description, pubDate, tags, slug } = Astro.props;
+
+const formatted = pubDate.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+});
+---
+
+<a href={`/blog/${slug}`} class="blog-card glow-hover">
+  <div class="bc-meta">
+    <span class="bc-date mono muted">{formatted}</span>
+    <div class="bc-tags">
+      {tags.slice(0, 2).map(t => <span class="tag">{t}</span>)}
+    </div>
+  </div>
+  <h3 class="bc-title">{title}</h3>
+  <p class="bc-desc">{description}</p>
+  <span class="bc-read">Read more &rarr;</span>
+</a>
+
+<style>
+.blog-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.25rem;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: var(--text);
+}
+
+.bc-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bc-date {
+  font-size: 0.72rem;
+}
+
+.bc-tags {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.bc-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+.bc-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.bc-read {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--accent);
+  margin-top: 0.25rem;
+}
+</style>

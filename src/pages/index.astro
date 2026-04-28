@@ -1,176 +1,172 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import kittArt from '../kitt-art.txt?raw';
+import TerminalText from '../components/TerminalText.astro';
+import SkillRadar from '../components/SkillRadar.astro';
+import ProjectCard from '../components/ProjectCard.astro';
 
-const projects = [
-  {
-    name: 'nick-website',
-    desc: '這個網站。ASCII Art 風格個人作品集，用 Astro 建造。',
-    tech: ['Astro', 'TypeScript'],
-    url: 'https://github.com/wongo/nick-website',
-    stars: '★ 0'
-  },
-  {
-    name: 'my-minimax-mcp',
-    desc: '把 MiniMax AI 包裝成 MCP server，讓 Claude Code 可以呼叫它當作自動化的程式碼執行器。',
-    tech: ['TypeScript', 'Node.js', 'MCP'],
-    url: 'https://github.com/wongo/my-minimax-mcp',
-    stars: '★ 1'
-  },
-  {
-    name: 'travelhelper',
-    desc: '地陪配對平台，幫助旅客找到當地導遊。',
-    tech: ['React', 'Node.js', 'PostgreSQL'],
-    url: 'https://github.com/wongo/travelhelper',
-    stars: '★ 2'
-  },
-  {
-    name: 'agent-elves',
-    desc: '專為 Claude Code 設計的 ASCII Art 辦公室動畫外掛。',
-    tech: ['TypeScript', 'Claude Code'],
-    url: 'https://github.com/wongo/agent-elves',
-    stars: '★ 3'
-  },
-  {
-    name: 'GameRank',
-    desc: '遊戲排行榜彙整工具。',
-    tech: ['Python', 'Web Scraping'],
-    url: 'https://github.com/wongo/GameRank',
-    stars: '★ 1'
-  },
+// Typing lines for hero
+const typingLines = [
+  'nick --about',
+  'Software Engineer @ Ubitus',
+  'Tokyo, Japan',
+  'Building tools & shipping features',
+  'Astro enthusiast',
+  'AI automation tinkerer',
 ];
+
+// Fetch top starred public repos
+const res = await fetch('https://api.github.com/users/wongo/repos?sort=stars&direction=desc&per_page=6&type=public');
+const repos = res.ok ? await res.json() : [];
+
+const featuredRepos = repos
+  .filter((r: any) => !r.name.includes('.github') && !r.name.includes('backup'))
+  .slice(0, 3)
+  .map((r: any) => ({
+    name: r.name,
+    description: r.description,
+    url: r.html_url,
+    stars: r.stargazers_count,
+    language: r.language,
+    topics: r.topics || [],
+  }));
 ---
 
 <BaseLayout title="Nick · nickdevlab">
 
-  <!-- ═══════════════════════════════════════════
-       HERO — KITT & Michael Knight
-  ═══════════════════════════════════════════ -->
-  <section class="hero" id="hero">
-    <div class="crt-overlay"></div>
-    <div class="hero-content">
-
-      <!-- Top scanner bar -->
-      <div class="scanner-bar">
-        <span class="scanner-title">K.N.I.T.T.</span>
-        <div class="scanner-track">
-          <div class="scanner-beam"></div>
-        </div>
-        <span class="scanner-status">TURBO BOOST: READY</span>
+  <!-- ═══════════════════════════════════════
+       HERO
+  ═══════════════════════════════════════ -->
+  <section class="hero">
+    <!-- KITT Dashboard Panel -->
+    <div class="kitt-panel">
+      <div class="panel-header">
+        <span class="panel-title">K.N.I.T.T. DASHBOARD</span>
+        <span class="panel-status">
+          <span class="panel-dot"></span>SYSTEM ONLINE
+        </span>
       </div>
 
-      <!-- Main KITT display -->
-      <div class="kitt-display">
-        <pre class="kitt-car-art">{kittArt}</pre>
+      <div class="kitt-body">
+        <!-- Left: ASCII art + info -->
+        <div class="kitt-left">
+          <pre class="kitt-ascii">
++------------------------------------------+
+|  ██████╗ ██████╗ ███╗   ██╗███████╗    |
+|  ██╔════╝██╔═══██╗████╗  ██║██╔════╝    |
+|  ╚█████╗ ██║   ██║██╔██╗ ██║█████╗      |
+|   ╚═══██╗██║   ██║██║╚██╗██║██╔══╝      |
+|  ██████╔╝╚██████╔╝██║ ╚████║███████╗   |
+|  ╚═════╝  ╚═════╝ ╚═╝  ╚═══╝╚══════╝   |
++------------------------------------------+
+          </pre>
+          <div class="kitt-status-grid">
+            <div class="status-item">
+              <span class="status-label">STATUS</span>
+              <span class="status-val available">AVAILABLE</span>
+            </div>
+            <div class="status-item">
+              <span class="status-label">LOCATION</span>
+              <span class="status-val">TOKYO, JP</span>
+            </div>
+            <div class="status-item">
+              <span class="status-label">ROLE</span>
+              <span class="status-val">SWE ENGINEER</span>
+            </div>
+            <div class="status-item">
+              <span class="status-label">FOUNDATION</span>
+              <span class="status-val">UBITUS INC.</span>
+            </div>
+          </div>
         </div>
 
-    </div>
-      <div class="scanner-bar bottom">
-        <span class="scanner-title">K.N.I.T.T.</span>
-        <div class="scanner-track">
-          <div class="scanner-beam beam2"></div>
+        <!-- Right: Terminal text -->
+        <div class="kitt-right">
+          <div class="terminal-label">// IDENTITY</div>
+          <TerminalText lines={typingLines} />
         </div>
-        <span class="scanner-status">v3.2.1 · INTERFACE: ACTIVE</span>
       </div>
-
     </div>
 
-    <!-- CTA buttons -->
-    <div class="hero-actions">
-      <a href="https://github.com/wongo" class="btn-kitt" target="_blank" rel="noopener">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
-        GitHub
+    <!-- CTA -->
+    <div class="hero-cta">
+      <a href="https://github.com/wongo" class="btn btn-kitt" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+        GitHub Profile
       </a>
-      <a href="#about" class="btn-ghost">About Me</a>
-      <a href="#projects" class="btn-ghost">Projects</a>
-      <a href="#contact" class="btn-ghost">Contact</a>
+      <a href="/projects" class="btn btn-ghost">View Projects</a>
+      <a href="/blog" class="btn btn-ghost">Blog</a>
     </div>
   </section>
 
-  <!-- ═══════════════════════════════════════════
-       ABOUT
-  ═══════════════════════════════════════════ -->
-  <section id="about">
-    <p class="section-tag">// ABOUT</p>
-    <h2>About</h2>
-    <div class="about-layout">
-      <div class="about-main">
-        <p>在東京生活的台灣軟體工程師。從系統底層到前端介面都有經驗，語言涵蓋 TypeScript、Python、C++、Dart。</p>
-        <p>喜歡寫工具、解決問題、把複雜的東西變簡單。目前在 Ubitus 參與雲端遊戲平台開發，同時持續維護各類業餘專案。</p>
-        <p>熟悉 Astro、React、Node.js、PostgreSQL、Docker，也寫過 Flutter App 和 Unity 小遊戲。業餘時間研究 AI 相關應用。</p>
-      </div>
-      <div class="about-sidebar">
-        <div class="tech-frame">
-          <div class="tech-frame-header">
-            <span class="tech-frame-title">// TECH_STACK</span>
-            <span class="tech-frame-count">11 LANGUAGES</span>
-          </div>
-          <div class="tech-grid">
-            {['TypeScript', 'Python', 'C++', 'Dart', 'Astro', 'React', 'Node.js', 'PostgreSQL', 'Docker', 'Flutter', 'Unity'].map((t, i) => (
-              <span class="tech-item" data-lang={t.toLowerCase().replace(/\s+/g, '-')}>{t}</span>
+  <!-- ═══════════════════════════════════════
+       SKILLS RADAR
+  ═══════════════════════════════════════ -->
+  <section>
+    <div class="container">
+      <p class="section-tag">// TECH_PROFILE</p>
+      <h2 class="section-title">Skills</h2>
+      <div class="skills-layout">
+        <div class="skills-text">
+          <p class="skills-intro">Full-stack engineer with a bias for shipping. From kernel modules to React components, here's where I spend my time.</p>
+          <div class="skills-list">
+            {[
+              { cat: 'Frontend', items: ['TypeScript', 'React', 'Astro', 'CSS/SCSS'] },
+              { cat: 'Backend', items: ['Node.js', 'Python', 'PostgreSQL', 'REST APIs'] },
+              { cat: 'DevOps', items: ['Docker', 'CI/CD', 'GitHub Actions', 'Linux'] },
+              { cat: 'AI/ML', items: ['LLM APIs', 'MCP', 'Prompt Engineering'] },
+              { cat: 'Game', items: ['Unity (C#)', 'Flutter', 'Godot'] },
+              { cat: 'Mobile', items: ['Flutter/Dart', 'React Native'] },
+            ].map(({ cat, items }) => (
+              <div class="skill-cat">
+                <span class="skill-cat-label">{cat}</span>
+                <div class="skill-items">
+                  {items.map(item => <span class="tag">{item}</span>)}
+                </div>
+              </div>
             ))}
           </div>
-          <div class="tech-frame-footer">
-            <span class="blink-slow">●</span> SYSTEM READY
-          </div>
+        </div>
+        <div class="skills-radar">
+          <SkillRadar size={300} />
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ═══════════════════════════════════════════
-       PROJECTS
-  ═══════════════════════════════════════════ -->
-  <section id="projects">
-    <p class="section-tag">// PROJECTS</p>
-    <h2>Projects</h2>
-    <div class="projects-grid">
-      {projects.map(p => (
-        <a href={p.url} class="project-card" target="_blank" rel="noopener">
-          <div class="project-header">
-            <span class="project-name">/{p.name}</span>
-            <span class="project-stars">{p.stars}</span>
-          </div>
-          <p class="project-desc">{p.desc}</p>
-          <div class="project-tech">
-            {p.tech.map(t => <span class="tag-sm">{t}</span>)}
-          </div>
-        </a>
-      ))}
+  <!-- ═══════════════════════════════════════
+       FEATURED PROJECTS
+  ═══════════════════════════════════════ -->
+  <section>
+    <div class="container">
+      <p class="section-tag">// PROJECTS</p>
+      <h2 class="section-title">Featured Work</h2>
+      {featuredRepos.length > 0 ? (
+        <div class="projects-grid">
+          {featuredRepos.map(repo => (
+            <ProjectCard {...repo} />
+          ))}
+        </div>
+      ) : (
+        <div class="panel" style="padding:2rem;text-align:center;">
+          <span class="mono muted">// Unable to load projects from GitHub</span>
+        </div>
+      )}
+      <div style="margin-top: 2rem; text-align: center;">
+        <a href="/projects" class="btn btn-ghost">View All Projects &rarr;</a>
+      </div>
     </div>
   </section>
 
-  <!-- ═══════════════════════════════════════════
-       CONTACT
-  ═══════════════════════════════════════════ -->
-  <section id="contact">
-    <p class="section-tag">// CONTACT</p>
-    <h2>Get In Touch</h2>
-    <div class="contact-grid">
-      <div class="contact-item">
-        <span class="contact-icon">@</span>
-        <div>
-          <span class="contact-label">Email</span>
-          <a href="mailto:wongo.w@gmail.com">wongo.w@gmail.com</a>
-        </div>
-      </div>
-      <div class="contact-item">
-        <span class="contact-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
-        </span>
-        <div>
-          <span class="contact-label">GitHub</span>
-          <a href="https://github.com/wongo" target="_blank" rel="noopener">@wongo</a>
-        </div>
-      </div>
-      <div class="contact-item">
-        <span class="contact-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
-        </span>
-        <div>
-          <span class="contact-label">Telegram</span>
-          <a href="https://t.me/nickwongo" target="_blank" rel="noopener">@nickwongo</a>
-        </div>
+  <!-- ═══════════════════════════════════════
+       BLOG PREVIEW
+  ═══════════════════════════════════════ -->
+  <section>
+    <div class="container">
+      <p class="section-tag">// BLOG</p>
+      <h2 class="section-title">Recent Posts</h2>
+      <div class="panel" style="padding: 2rem; text-align: center;">
+        <p class="mono muted">// Blog posts coming soon. Manual posts from Facebook go here.</p>
+        <a href="/blog" class="btn btn-ghost" style="margin-top: 1rem;">View All Posts &rarr;</a>
       </div>
     </div>
   </section>
@@ -178,500 +174,174 @@ const projects = [
 </BaseLayout>
 
 <style>
-  /* ═══════════════════════════════════
-     HERO
-  ═══════════════════════════════════ */
-  .hero {
-    position: relative;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 6rem 1.5rem 4rem;
-    overflow: hidden;
-    border-bottom: 1px solid var(--border);
-  }
+/* ── Hero ── */
+.hero {
+  padding: 5rem 0 4rem;
+  border-bottom: 1px solid var(--border);
+}
 
-  /* CRT scanline overlay */
-  .crt-overlay {
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      rgba(0, 0, 0, 0.08) 0px,
-      rgba(0, 0, 0, 0.08) 1px,
-      transparent 1px,
-      transparent 2px
-    );
-    pointer-events: none;
-    z-index: 10;
-  }
+.kitt-panel {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  overflow: hidden;
+  max-width: 900px;
+  margin: 0 auto 3rem;
+  box-shadow: 0 0 40px rgba(230, 57, 70, 0.08);
+}
 
-  .hero-content {
-    width: 100%;
-    max-width: 860px;
-    background: #0d0d14;
-    border: 2px solid #2a2a3a;
-    border-radius: 8px;
-    box-shadow:
-      0 0 0 1px #1a1a28,
-      0 0 60px rgba(230, 57, 70, 0.12),
-      inset 0 0 80px rgba(0, 0, 0, 0.5);
-    overflow: hidden;
-    animation: power-on 1s ease-out;
-  }
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 1.25rem;
+  background: var(--bg3);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+}
 
-  @keyframes power-on {
-    0% { opacity: 0; transform: scale(0.98); filter: brightness(2); }
-    50% { opacity: 1; transform: scale(1); filter: brightness(1.2); }
-    100% { opacity: 1; transform: scale(1); filter: brightness(1); }
-  }
+.panel-title { color: var(--accent); letter-spacing: 0.1em; font-weight: 600; }
+.panel-status { color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+.panel-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: blink 1.8s ease-in-out infinite;
+}
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
 
-  /* Scanner bar */
-  .scanner-bar {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 0.5rem 1rem;
-    background: #111118;
-    border-bottom: 1px solid #1e1e2e;
-    font-family: var(--font-mono);
-    font-size: 0.6rem;
-  }
+.kitt-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
 
-  .scanner-bar.bottom {
-    border-bottom: none;
-    border-top: 1px solid #1e1e2e;
-  }
+.kitt-left {
+  padding: 1.5rem;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
 
-  .scanner-title {
-    color: var(--accent);
-    font-weight: 700;
-    letter-spacing: 0.1em;
-  }
+.kitt-ascii {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  line-height: 1.2;
+  color: var(--accent);
+  white-space: pre;
+  text-shadow: 0 0 8px rgba(230, 57, 70, 0.3);
+}
 
-  .scanner-status {
-    color: #4a4a6a;
-    letter-spacing: 0.05em;
-  }
+.kitt-status-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
 
-  .scanner-track {
-    flex: 1;
-    height: 4px;
-    background: #1a1a28;
-    border-radius: 2px;
-    overflow: hidden;
-    position: relative;
-  }
+.status-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
 
-  .scanner-beam {
-    position: absolute;
-    top: 0;
-    left: -30%;
-    width: 30%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, var(--accent), transparent);
-    animation: scan 2.5s linear infinite;
-    border-radius: 2px;
-  }
+.status-label {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+}
 
-  .scanner-beam.beam2 {
-    animation: scan2 3.1s linear infinite;
-  }
+.status-val {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text);
+}
 
-  @keyframes scan {
-    0% { left: -30%; opacity: 0; }
-    10% { opacity: 1; }
-    90% { opacity: 1; }
-    100% { left: 100%; opacity: 0; }
-  }
+.status-val.available {
+  color: var(--green);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse { 0%, 100% { text-shadow: 0 0 4px rgba(34, 197, 94, 0.4); } 50% { text-shadow: 0 0 10px rgba(34, 197, 94, 0.8); } }
 
-  @keyframes scan2 {
-    0% { left: -30%; opacity: 0; }
-    10% { opacity: 1; }
-    90% { opacity: 1; }
-    100% { left: 100%; opacity: 0; }
-  }
+.kitt-right {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
 
-  /* KITT display */
-  .kitt-display {
-    padding: 1.2rem 1rem 0.8rem;
-    background: #0a0a10;
-    overflow-x: auto;
-  }
+.terminal-label {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+}
 
-  .kitt-car-art {
-    font-family: var(--font-mono);
-    font-size: 0.48rem;
-    line-height: 1.2;
-    color: var(--accent);
-    white-space: pre;
-    overflow-x: auto;
-    text-shadow: 0 0 8px rgba(230, 57, 70, 0.35);
-    display: block;
-  }
+/* CTA */
+.hero-cta {
+  display: flex;
+  justify-content: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
 
-  /* Michael Knight panel */
-  .michael-panel {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 2rem;
-    padding: 1.2rem 1.5rem;
-    border-top: 1px solid #1e1e2e;
-    border-bottom: 1px solid #1e1e2e;
-    background: #0d0d14;
-  }
+/* Skills */
+.skills-layout {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 3rem;
+  align-items: center;
+}
 
-  .michael-art {
-    flex-shrink: 0;
-  }
+.skills-intro {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+}
 
-  .michael-art pre {
-    font-family: var(--font-mono);
-    font-size: 0.5rem;
-    line-height: 1.2;
-    color: #4a9eff;
-    white-space: pre;
-    text-shadow: 0 0 8px rgba(74, 158, 255, 0.3);
-  }
+.skills-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
 
-  .michael-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-  }
+.skill-cat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
 
-  .avail-badge {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    color: #22c55e;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    animation: pulse-glow 2s ease-in-out infinite;
-  }
+.skill-cat-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
 
-  @keyframes pulse-glow {
-    0%, 100% { text-shadow: 0 0 6px rgba(34, 197, 94, 0.5); }
-    50% { text-shadow: 0 0 14px rgba(34, 197, 94, 0.9); }
-  }
+.skill-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
 
-  .location {
-    font-family: var(--font-mono);
-    font-size: 0.65rem;
-    color: var(--text-muted);
-    letter-spacing: 0.1em;
-  }
+/* Projects */
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
 
-  .role {
-    font-family: var(--font-mono);
-    font-size: 0.65rem;
-    color: var(--text-muted);
-    letter-spacing: 0.06em;
-  }
-
-  .tagline {
-    font-family: var(--font-mono);
-    font-size: 0.55rem;
-    color: #4a9eff;
-    font-style: italic;
-    margin-top: 0.4rem;
-  }
-
-  /* Hero CTA */
-  .hero-actions {
-    display: flex;
-    gap: 0.8rem;
-    margin-top: 2.5rem;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .btn-kitt {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    background: var(--accent);
-    color: #fff;
-    padding: 0.65rem 1.4rem;
-    border-radius: 5px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: all 0.2s;
-    box-shadow: 0 0 16px rgba(230, 57, 70, 0.25);
-  }
-
-  .btn-kitt:hover {
-    background: var(--accent2);
-    transform: translateY(-2px);
-    box-shadow: 0 0 24px rgba(230, 57, 70, 0.45);
-  }
-
-  .btn-ghost {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    background: transparent;
-    color: var(--text);
-    padding: 0.65rem 1.4rem;
-    border-radius: 5px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    border: 1px solid var(--border);
-    transition: all 0.2s;
-  }
-
-  .btn-ghost:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-    transform: translateY(-2px);
-  }
-
-  /* ═══════════════════════════════════
-     ABOUT
-  ═══════════════════════════════════ */
-  .about-layout {
-    display: grid;
-    grid-template-columns: 1fr 340px;
-    gap: 4rem;
-    align-items: start;
-  }
-
-  .about-main {
-    min-width: 0;
-  }
-
-  .about-main p {
-    color: var(--text-muted);
-    margin-bottom: 1.2rem;
-    font-size: 1rem;
-    line-height: 1.75;
-  }
-
-  .about-main p:last-child { margin-bottom: 0; }
-
-  /* Tech Stack frame */
-  .tech-frame {
-    background: #0d0d14;
-    border: 1px solid #2a2a3a;
-    border-radius: 6px;
-    overflow: hidden;
-    box-shadow: 0 0 20px rgba(230, 57, 70, 0.06);
-  }
-
-  .tech-frame-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.6rem 1rem;
-    background: #111118;
-    border-bottom: 1px solid #1e1e2e;
-  }
-
-  .tech-frame-title {
-    font-family: var(--font-mono);
-    font-size: 0.65rem;
-    color: var(--accent);
-    letter-spacing: 0.08em;
-  }
-
-  .tech-frame-count {
-    font-family: var(--font-mono);
-    font-size: 0.55rem;
-    color: #4a4a6a;
-    letter-spacing: 0.05em;
-  }
-
-  .tech-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0;
-    padding: 0.6rem 0;
-  }
-
-  .tech-item {
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
-    color: var(--text-muted);
-    padding: 0.45rem 1rem;
-    transition: all 0.15s;
-    cursor: default;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-  }
-
-  .tech-item::before {
-    content: '>';
-    color: var(--accent);
-    opacity: 0.5;
-    font-size: 0.6rem;
-    flex-shrink: 0;
-  }
-
-  .tech-item:hover {
-    background: rgba(230, 57, 70, 0.06);
-    color: var(--text);
-  }
-
-  .tech-item:hover::before {
-    opacity: 1;
-  }
-
-  .tech-frame-footer {
-    padding: 0.5rem 1rem;
-    background: #111118;
-    border-top: 1px solid #1e1e2e;
-    font-family: var(--font-mono);
-    font-size: 0.55rem;
-    color: #4a4a6a;
-    letter-spacing: 0.08em;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-  }
-
-  .blink-slow {
-    color: #22c55e;
-    animation: blink-slow 2.5s ease-in-out infinite;
-  }
-
-  @keyframes blink-slow {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.2; }
-  }
-
-  /* ═══════════════════════════════════
-     PROJECTS
-  ═══════════════════════════════════ */
-  .projects-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.2rem;
-  }
-
-  .project-card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 1.25rem;
-    transition: all 0.25s;
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-  }
-
-  .project-card:hover {
-    border-color: var(--accent);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(230, 57, 70, 0.1);
-  }
-
-  .project-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .project-name {
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
-    color: var(--accent);
-    font-weight: 500;
-  }
-
-  .project-stars {
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    color: var(--text-muted);
-  }
-
-  .project-desc {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    line-height: 1.5;
-    flex: 1;
-  }
-
-  .project-tech {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.3rem;
-  }
-
-  .tag-sm {
-    font-family: var(--font-mono);
-    font-size: 0.62rem;
-    background: var(--bg);
-    border: 1px solid #1e1e2a;
-    padding: 0.1rem 0.4rem;
-    border-radius: 3px;
-    color: var(--text-muted);
-  }
-
-  /* ═══════════════════════════════════
-     CONTACT
-  ═══════════════════════════════════ */
-  .contact-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 1.5rem;
-  }
-
-  .contact-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.8rem;
-  }
-
-  .contact-icon {
-    font-family: var(--font-mono);
-    font-size: 1.2rem;
-    color: var(--accent);
-    flex-shrink: 0;
-    margin-top: 0.1rem;
-  }
-
-  .contact-icon svg {
-    display: block;
-    fill: var(--accent);
-  }
-
-  .contact-item > div {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .contact-label {
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    color: var(--text-muted);
-  }
-
-  .contact-item a {
-    font-size: 0.95rem;
-    color: var(--text);
-    transition: color 0.2s;
-  }
-
-  .contact-item a:hover { color: var(--accent); }
-
-  /* ═══════════════════════════════════
-     RESPONSIVE
-  ═══════════════════════════════════ */
-  @media (max-width: 700px) {
-    .kitt-car-art { font-size: 0.36rem; }
-    .michael-art pre { font-size: 0.38rem; }
-    .about-layout { grid-template-columns: 1fr; gap: 2rem; }
-    .about-sidebar { order: -1; }
-    .tech-grid { grid-template-columns: 1fr 1fr; }
-    .michael-panel { flex-direction: column; gap: 1rem; text-align: center; }
-    .scanner-bar { font-size: 0.5rem; gap: 0.5rem; }
-    .hero { padding: 5rem 1rem 3rem; min-height: auto; }
-  }
-
-  /* scroll-margin for sticky nav */
-  section { scroll-margin-top: 70px; }
+@media (max-width: 768px) {
+  .kitt-body { grid-template-columns: 1fr; }
+  .kitt-left { border-right: none; border-bottom: 1px solid var(--border); }
+  .skills-layout { grid-template-columns: 1fr; }
+  .skills-radar { order: -1; }
+  .skills-list { grid-template-columns: 1fr; }
+}
 </style>

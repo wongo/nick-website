@@ -1,0 +1,114 @@
+---
+// TerminalText — Typing animation cycling through intro lines
+interface Props {
+  lines: string[];
+  typingSpeed?: number; // ms per character
+  deleteSpeed?: number;
+  pauseDuration?: number; // ms to pause after full line
+}
+
+const {
+  lines,
+  typingSpeed = 55,
+  deleteSpeed = 30,
+  pauseDuration = 2500,
+} = Astro.props;
+
+const id = `terminal-text-${Math.random().toString(36).slice(2, 8)}`;
+---
+
+<div class="terminal-text" id={id}>
+  <div class="tt-header">
+    <span class="tt-prompt">$</span>
+    <span class="tt-output"></span>
+    <span class="tt-cursor">_</span>
+  </div>
+</div>
+
+<script
+  define:vars={{ id, lines, typingSpeed, deleteSpeed, pauseDuration }}
+>
+  const el = document.getElementById(id);
+  const output = el.querySelector('.tt-output');
+  const cursor = el.querySelector('.tt-cursor');
+  let lineIndex = 0;
+  let charIndex = 0;
+  let deleting = false;
+  let paused = false;
+
+  function blink() {
+    cursor.style.opacity = cursor.style.opacity === '0' ? '1' : '0';
+  }
+  setInterval(blink, 500);
+
+  function type() {
+    if (paused) return;
+
+    const current = lines[lineIndex];
+
+    if (!deleting) {
+      // Typing forward
+      if (charIndex < current.length) {
+        output.textContent += current[charIndex];
+        charIndex++;
+        setTimeout(type, typingSpeed);
+      } else {
+        // Finished typing line — pause then start deleting
+        paused = true;
+        setTimeout(() => {
+          paused = false;
+          deleting = true;
+          type();
+        }, pauseDuration);
+      }
+    } else {
+      // Deleting
+      if (output.textContent.length > 0) {
+        output.textContent = output.textContent.slice(0, -1);
+        setTimeout(type, deleteSpeed);
+      } else {
+        // Move to next line
+        deleting = false;
+        charIndex = 0;
+        lineIndex = (lineIndex + 1) % lines.length;
+        setTimeout(type, 300);
+      }
+    }
+  }
+
+  type();
+</script>
+
+<style>
+.terminal-text {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  min-height: 3.5rem;
+}
+
+.tt-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.tt-prompt {
+  color: var(--accent);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.tt-output {
+  color: var(--text);
+  letter-spacing: 0.03em;
+}
+
+.tt-cursor {
+  color: var(--accent);
+  font-weight: 700;
+}
+</style>

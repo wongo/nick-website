@@ -1,0 +1,264 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SkillRadar from '../components/SkillRadar.astro';
+---
+
+<BaseLayout title="About · nickdevlab" description="Nick — Taiwanese software engineer based in Tokyo">
+
+  <section>
+    <div class="container">
+      <p class="section-tag">// IDENTITY</p>
+      <h1 class="section-title">About</h1>
+
+      <div class="about-grid">
+        <div class="about-main">
+
+          <div class="panel about-panel">
+            <div class="panel-header">
+              <span class="panel-title">BIO.DAT</span>
+              <span class="panel-status">
+                <span class="panel-dot"></span>ACTIVE
+              </span>
+            </div>
+            <div class="panel-body">
+              <p>I am a Taiwanese software engineer based in Tokyo, Japan. I work at <strong>Ubitus Inc.</strong>, building cloud gaming platform infrastructure that powers some of the world's largest game streaming services.</p>
+              <p>My work spans the full stack — from low-level C++ engine integration to React frontends and the Kubernetes clusters that tie everything together. I enjoy building developer tools, automating repetitive workflows, and making complex systems more accessible.</p>
+              <p>Outside of work, I maintain a handful of open source projects and explore AI-assisted development workflows. When I am not at a keyboard, I am probably walking my dog CHOCO or exploring Tokyo.</p>
+            </div>
+          </div>
+
+          <h2 class="sub-heading">Career Timeline</h2>
+
+          <div class="timeline">
+            {[
+              { period: '2023 — Present', role: 'Software Engineer', org: 'Ubitus Inc.', desc: 'Cloud gaming platform development. Kubernetes, Go, C++, React.' },
+              { period: '2021 — 2023', role: 'Full Stack Developer', org: 'Freelance', desc: 'Web apps, LINE bots, mobile apps for clients in Taiwan and Japan.' },
+              { period: '2019 — 2021', role: 'Software Engineer', org: 'Taiwan tech startup', desc: 'Built and maintained core SaaS platform serving 50k+ users.' },
+            ].map(item => (
+              <div class="timeline-item">
+                <div class="tl-marker">
+                  <div class="tl-dot"></div>
+                  <div class="tl-line"></div>
+                </div>
+                <div class="tl-content">
+                  <span class="tl-period mono muted">{item.period}</span>
+                  <span class="tl-role">{item.role}</span>
+                  <span class="tl-org accent">{item.org}</span>
+                  <p class="tl-desc">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+        </div>
+
+        <div class="about-sidebar">
+
+          <div class="panel" style="padding: 1.5rem; text-align: center;">
+            <div class="panel-header" style="margin: -1.5rem -1.5rem 1rem; padding: 0.6rem 1rem;">
+              <span class="panel-title">SKILL.MATRIX</span>
+            </div>
+            <SkillRadar size={260} />
+          </div>
+
+          <div class="panel" style="padding: 1.25rem;">
+            <div class="panel-header" style="margin: -1.25rem -1.25rem 1rem; padding: 0.6rem 1rem;">
+              <span class="panel-title">TOOLS.ENV</span>
+            </div>
+            <div class="tools-grid">
+              {[
+                ['OS', ['macOS', 'Linux', 'WSL2']],
+                ['Editor', ['VS Code', 'Neovim', 'Cursor']],
+                ['Stack', ['TypeScript', 'Python', 'Go', 'C++']],
+                ['Cloud', ['AWS', 'GCP', 'Cloudflare']],
+                ['Containers', ['Docker', 'Kubernetes', 'Helm']],
+                ['AI Tools', ['Claude Code', 'ChatGPT', 'MiniMax MCP']],
+              ].map(([cat, items]) => (
+                <div class="tool-cat">
+                  <span class="tool-cat-label">{cat}</span>
+                  <div class="tool-items">
+                    {(items as string[]).map(i => <span class="tag">{i}</span>)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div class="panel" style="padding: 1.25rem;">
+            <div class="panel-header" style="margin: -1.25rem -1.25rem 1rem; padding: 0.6rem 1rem;">
+              <span class="panel-title">LINKS.DAT</span>
+            </div>
+            <div class="links-list">
+              <a href="https://github.com/wongo" target="_blank" rel="noopener" class="link-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+                github.com/wongo
+              </a>
+              <a href="https://t.me/nickwongo" target="_blank" rel="noopener" class="link-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+                @nickwongo
+              </a>
+              <a href="mailto:wongo.w@gmail.com" class="link-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                wongo.w@gmail.com
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+</BaseLayout>
+
+<style>
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 2.5rem;
+  align-items: start;
+}
+
+.about-panel .panel-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.about-panel .panel-body p {
+  color: var(--text-muted);
+  line-height: 1.7;
+  font-size: 0.95rem;
+}
+
+.about-panel .panel-body strong {
+  color: var(--text);
+}
+
+.sub-heading {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 2.5rem 0 1.5rem;
+  letter-spacing: -0.02em;
+}
+
+/* Timeline */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.timeline-item {
+  display: flex;
+  gap: 1.25rem;
+}
+
+.tl-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  padding-top: 0.2rem;
+}
+
+.tl-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--bg);
+  box-shadow: 0 0 6px rgba(230, 57, 70, 0.4);
+  flex-shrink: 0;
+}
+
+.tl-line {
+  width: 1px;
+  flex: 1;
+  background: var(--border);
+  margin: 6px 0;
+}
+
+.timeline-item:last-child .tl-line { display: none; }
+
+.tl-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding-bottom: 2rem;
+}
+
+.tl-period {
+  font-size: 0.72rem;
+}
+
+.tl-role {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.tl-org {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.tl-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-top: 0.2rem;
+}
+
+/* Tools */
+.tools-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tool-cat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.tool-cat-label {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+}
+
+.tool-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+/* Links */
+.links-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.link-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+
+.link-item:hover {
+  color: var(--accent);
+}
+
+@media (max-width: 768px) {
+  .about-grid { grid-template-columns: 1fr; }
+}

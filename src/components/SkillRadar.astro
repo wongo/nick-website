@@ -1,0 +1,128 @@
+---
+// SkillRadar — Pure SVG radar/spider chart with 6 axes
+interface Props {
+  size?: number;
+}
+
+const { size = 280 } = Astro.props;
+
+// 6 axes: Frontend, Backend, DevOps, AI, Game, Mobile
+const skills = [
+  { label: 'Frontend', value: 90 },
+  { label: 'Backend',  value: 75 },
+  { label: 'DevOps',   value: 65 },
+  { label: 'AI/ML',    value: 60 },
+  { label: 'Game',     value: 55 },
+  { label: 'Mobile',   value: 50 },
+];
+
+const cx = size / 2;
+const cy = size / 2;
+const maxR = size / 2 - 40;
+const axes = skills.length;
+const angleStep = (Math.PI * 2) / axes;
+
+function polarToCartesian(angle: number, r: number) {
+  return {
+    x: cx + r * Math.cos(angle - Math.PI / 2),
+    y: cy + r * Math.sin(angle - Math.PI / 2),
+  };
+}
+
+// Grid rings at 25%, 50%, 75%, 100%
+const rings = [0.25, 0.5, 0.75, 1.0].map(pct => {
+  const points = Array.from({ length: axes }, (_, i) => {
+    const p = polarToCartesian(i * angleStep, maxR * pct);
+    return `${p.x},${p.y}`;
+  });
+  return points.join(' ');
+});
+
+// Skill data polygon
+const dataPoints = skills.map((s, i) => {
+  const p = polarToCartesian(i * angleStep, maxR * (s.value / 100));
+  return `${p.x},${p.y}`;
+}).join(' ');
+
+// Axis end points for labels
+const axisEnds = skills.map((s, i) => polarToCartesian(i * angleStep, maxR + 28));
+---
+
+<div class="radar-wrapper">
+  <svg
+    width={size}
+    height={size}
+    viewBox={`0 0 ${size} ${size}`}
+    aria-label="Skill radar chart"
+    role="img"
+  >
+    <!-- Grid polygons -->
+    {rings.map((pts, i) => (
+      <polygon
+        points={pts}
+        fill="none"
+        stroke={i === 3 ? 'var(--border2)' : 'var(--border)'}
+        stroke-width={i === 3 ? '1.5' : '1'}
+      />
+    ))}
+
+    <!-- Axis lines -->
+    {skills.map((_, i) => {
+      const end = polarToCartesian(i * angleStep, maxR);
+      return <line x1={cx} y1={cy} x2={end.x} y2={end.y} stroke="var(--border)" stroke-width="1" />;
+    })}
+
+    <!-- Data fill polygon -->
+    <polygon
+      points={dataPoints}
+      fill="var(--accent-dim)"
+      stroke="var(--accent)"
+      stroke-width="1.5"
+      stroke-linejoin="round"
+    />
+
+    <!-- Data points -->
+    {skills.map((s, i) => {
+      const p = polarToCartesian(i * angleStep, maxR * (s.value / 100));
+      return (
+        <circle
+          cx={p.x}
+          cy={p.y}
+          r="4"
+          fill="var(--accent)"
+          stroke="var(--bg)"
+          stroke-width="2"
+        />
+      );
+    })}
+
+    <!-- Labels -->
+    {skills.map((s, i) => {
+      const p = axisEnds[i];
+      const textAnchor = p.x < cx - 10 ? 'end' : p.x > cx + 10 ? 'start' : 'middle';
+      return (
+        <text
+          x={p.x}
+          y={p.y}
+          text-anchor={textAnchor}
+          dominant-baseline="middle"
+          font-family="JetBrains Mono, monospace"
+          font-size="11"
+          fill="var(--text-muted)"
+        >
+          {s.label}
+        </text>
+      );
+    })}
+
+    <!-- Center dot -->
+    <circle cx={cx} cy={cy} r="3" fill="var(--accent)" />
+  </svg>
+</div>
+
+<style>
+.radar-wrapper {
+  display: flex;
+  justify-content: center;
+}
+</style>

@@ -1,0 +1,212 @@
+/* ─────────────────────────────────────────
+   KITT Theme — Global CSS
+   nickdevlab.com
+───────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+
+/* ── Variables ── */
+:root {
+  --bg:         #0a0a0f;
+  --bg2:        #080810;
+  --bg3:        #111118;
+  --accent:     #e63946;
+  --accent2:    #ff4444;
+  --accent-dim: rgba(230, 57, 70, 0.15);
+  --text:       #f1f1f4;
+  --text-muted: #6b6b7a;
+  --border:     #1e1e2e;
+  --border2:    #2a2a3a;
+  --green:      #22c55e;
+  --blue:       #4a9eff;
+  --yellow:     #fbbf24;
+  --font-mono:  'JetBrains Mono', monospace;
+  --font-sans:  system-ui, -apple-system, sans-serif;
+  --max-w:      960px;
+  --radius:     6px;
+  --shadow-glow: 0 0 24px rgba(230, 57, 70, 0.18);
+}
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* CRT scanline overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.06) 0px,
+    rgba(0, 0, 0, 0.06) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+a { color: inherit; text-decoration: none; }
+a:hover { color: var(--accent); }
+
+img { max-width: 100%; display: block; }
+code, pre { font-family: var(--font-mono); }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* ── Utilities ── */
+.container {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.mono { font-family: var(--font-mono); }
+.accent { color: var(--accent); }
+.muted { color: var(--text-muted); }
+
+/* ── Section ── */
+section {
+  padding: 5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+section:last-child { border-bottom: none; }
+
+.section-tag {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 0.5rem;
+}
+
+.section-title {
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  margin-bottom: 3rem;
+}
+
+/* ── Panel Frame ── */
+.panel {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 1rem;
+  background: var(--bg3);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+}
+
+.panel-title { color: var(--accent); letter-spacing: 0.08em; }
+.panel-status { color: var(--text-muted); }
+
+.panel-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  margin-right: 6px;
+  animation: blink 1.8s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1.3rem;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-kitt {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 0 16px rgba(230, 57, 70, 0.25);
+}
+
+.btn-kitt:hover {
+  background: var(--accent2);
+  transform: translateY(-2px);
+  box-shadow: 0 0 28px rgba(230, 57, 70, 0.45);
+  color: #fff;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border2);
+}
+
+.btn-ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-2px);
+}
+
+/* ── Tag ── */
+.tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 3px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+/* ── Glow hover ── */
+.glow-hover {
+  transition: box-shadow 0.25s, transform 0.25s, border-color 0.25s;
+}
+
+.glow-hover:hover {
+  border-color: var(--accent) !important;
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-3px);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  section { padding: 3.5rem 0; }
+  .section-title { font-size: 1.5rem; }
+}

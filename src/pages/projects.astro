@@ -1,0 +1,60 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+
+// Fetch all public repos sorted by stars
+const res = await fetch(
+  'https://api.github.com/users/wongo/repos?sort=stars&direction=desc&per_page=30&type=public'
+);
+const repos = res.ok ? await res.json() : [];
+
+const projects = repos
+  .filter((r: any) => !r.name.includes('.github'))
+  .map((r: any) => ({
+    name: r.name,
+    description: r.description,
+    url: r.html_url,
+    stars: r.stargazers_count,
+    language: r.language,
+    topics: r.topics || [],
+  }));
+---
+
+<BaseLayout title="Projects · nickdevlab" description="Open source projects by Nick — software engineer in Tokyo">
+
+  <section>
+    <div class="container">
+      <p class="section-tag">// GITHUB</p>
+      <h1 class="section-title">Projects</h1>
+
+      <div class="panel" style="margin-bottom: 2rem; padding: 1rem 1.25rem;">
+        <span class="mono muted" style="font-size: 0.75rem;">
+          // Fetching live data from
+          <a href="https://github.com/wongo" target="_blank" rel="noopener" style="color: var(--accent);">github.com/wongo</a>
+          &nbsp;&mdash;&nbsp; {projects.length} public repos found
+        </span>
+      </div>
+
+      {projects.length > 0 ? (
+        <div class="projects-grid">
+          {projects.map(repo => (
+            <ProjectCard {...repo} />
+          ))}
+        </div>
+      ) : (
+        <div class="panel" style="padding: 3rem; text-align: center;">
+          <p class="mono muted">// Unable to reach GitHub API. Check your connection.</p>
+        </div>
+      )}
+    </div>
+  </section>
+
+</BaseLayout>
+
+<style>
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+</style>
