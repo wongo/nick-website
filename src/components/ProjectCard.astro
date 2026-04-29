@@ -14,7 +14,7 @@ const { name, description, url, stars, language, topics, banner } = Astro.props;
 ---
 
 <a href={url} class="project-card glow-hover" target="_blank" rel="noopener">
-  {banner && (
+  {typeof banner === 'string' && banner.length > 0 && (
     <div class="pc-banner">
       <img src={banner} alt={`${name} banner`} loading="lazy" />
     </div>
