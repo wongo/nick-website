@@ -1,0 +1,1649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>KITT RIS</title>
+<style>
+  :root {
+    --bg: #000000;
+    --panel: #050505;
+    --border: #00ffff;
+    --text: #00ffff;
+    --accent: #ff0000;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #000000; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Courier New', monospace;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    position: relative;
+    overflow-x: hidden;
+  }
+  /* CRT scanline overlay */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 50;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0) 0px,
+      rgba(0, 0, 0, 0) 2px,
+      rgba(0, 0, 0, 0.18) 3px,
+      rgba(0, 0, 0, 0.18) 4px
+    );
+    mix-blend-mode: multiply;
+  }
+  /* Subtle CRT vignette / flicker */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 49;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0) 60%, rgba(0,0,0,0.55) 100%);
+  }
+  .game-container {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    position: relative;
+    z-index: 1;
+  }
+  h1 {
+    font-size: 32px;
+    letter-spacing: 8px;
+    text-align: center;
+    color: var(--accent);
+    text-shadow:
+      0 0 6px var(--accent),
+      0 0 12px var(--accent),
+      0 0 24px var(--accent),
+      0 0 48px rgba(255, 0, 0, 0.6);
+    margin-bottom: 16px;
+    animation: titlePulse 1.6s ease-in-out infinite;
+  }
+  @keyframes titlePulse {
+    0%, 100% {
+      text-shadow:
+        0 0 6px var(--accent),
+        0 0 12px var(--accent),
+        0 0 24px var(--accent),
+        0 0 48px rgba(255, 0, 0, 0.6);
+    }
+    50% {
+      text-shadow:
+        0 0 10px var(--accent),
+        0 0 20px var(--accent),
+        0 0 36px var(--accent),
+        0 0 64px rgba(255, 0, 0, 0.85);
+    }
+  }
+  .board-shake {
+    will-change: transform;
+  }
+  .board-wrap {
+    border: 3px solid var(--border);
+    box-shadow:
+      0 0 16px rgba(0, 255, 255, 0.6),
+      inset 0 0 16px rgba(0, 255, 255, 0.15);
+    background: #000;
+    padding: 4px;
+    position: relative;
+    overflow: hidden;
+  }
+  /* KITT scanner line over the game grid */
+  .board-wrap::after {
+    content: "";
+    position: absolute;
+    left: 4px;
+    right: 4px;
+    height: 6px;
+    background: linear-gradient(
+      to bottom,
+      rgba(255, 0, 0, 0) 0%,
+      rgba(255, 0, 0, 0.85) 50%,
+      rgba(255, 0, 0, 0) 100%
+    );
+    box-shadow:
+      0 0 12px rgba(255, 0, 0, 0.9),
+      0 0 28px rgba(255, 0, 0, 0.7);
+    pointer-events: none;
+    z-index: 5;
+    mix-blend-mode: screen;
+    animation: kittScan 3.2s ease-in-out infinite alternate;
+  }
+  @keyframes kittScan {
+    0%   { top: 4px; }
+    100% { top: calc(100% - 10px); }
+  }
+  /* Full-board white flash on Tetris */
+  .board-flash {
+    position: absolute;
+    inset: 4px;
+    background: #ffffff;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 6;
+    mix-blend-mode: screen;
+  }
+  .board-flash.active {
+    animation: boardFlash 320ms ease-out;
+  }
+  @keyframes boardFlash {
+    0%   { opacity: 0.95; }
+    100% { opacity: 0; }
+  }
+  canvas {
+    display: block;
+    background: #000;
+    image-rendering: pixelated;
+  }
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 200px;
+  }
+  .panel {
+    background: var(--panel);
+    border: 2px solid var(--border);
+    padding: 12px 16px;
+    box-shadow:
+      0 0 10px rgba(0, 255, 255, 0.45),
+      inset 0 0 8px rgba(0, 255, 255, 0.08);
+  }
+  .panel h2 {
+    font-size: 14px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    margin-bottom: 8px;
+    text-shadow: 0 0 6px var(--accent), 0 0 12px rgba(255,0,0,0.6);
+  }
+  .stat {
+    font-size: 22px;
+    font-weight: bold;
+    color: var(--accent);
+    text-shadow: 0 0 6px var(--accent), 0 0 12px rgba(255,0,0,0.5);
+  }
+  .next-canvas-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 4px;
+  }
+  .controls {
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--accent);
+    text-shadow: 0 0 4px rgba(255,0,0,0.6);
+  }
+  .controls span {
+    color: var(--border);
+    font-weight: bold;
+    text-shadow: 0 0 4px var(--border);
+  }
+
+  /* Score popup floats up from board */
+  .score-popup {
+    position: absolute;
+    left: 50%;
+    top: 60%;
+    transform: translate(-50%, 0);
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    pointer-events: none;
+    z-index: 9;
+    opacity: 1;
+    white-space: nowrap;
+    text-align: center;
+    transition: transform 1.1s cubic-bezier(0.2, 0.7, 0.4, 1), opacity 1.1s ease-out;
+  }
+  .score-popup .amount {
+    font-size: 30px;
+    color: #00ffff;
+    text-shadow:
+      0 0 6px #00ffff,
+      0 0 14px #00ffff,
+      0 0 28px rgba(0, 255, 255, 0.7);
+    letter-spacing: 2px;
+  }
+  .score-popup .label {
+    font-size: 14px;
+    color: #ff0000;
+    text-shadow: 0 0 8px #ff0000, 0 0 16px rgba(255,0,0,0.7);
+    letter-spacing: 4px;
+    margin-top: 2px;
+  }
+  .score-popup.float {
+    transform: translate(-50%, -240%);
+    opacity: 0;
+  }
+
+  .start-overlay, .game-over-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+  .start-overlay.active, .game-over-overlay.active { display: flex; }
+  .start-box, .game-over-box {
+    background: var(--panel);
+    border: 3px solid var(--border);
+    padding: 32px 48px;
+    text-align: center;
+    box-shadow:
+      0 0 30px rgba(0, 255, 255, 0.7),
+      inset 0 0 20px rgba(255, 0, 0, 0.2);
+  }
+  .start-box h2, .game-over-box h2 {
+    font-size: 32px;
+    letter-spacing: 4px;
+    color: var(--accent);
+    text-shadow: 0 0 10px var(--accent), 0 0 24px var(--accent);
+    margin-bottom: 16px;
+  }
+  .start-box p, .game-over-box p {
+    margin-bottom: 20px;
+    font-size: 16px;
+    color: var(--border);
+    text-shadow: 0 0 4px var(--border);
+  }
+  button {
+    background: transparent;
+    border: 2px solid var(--border);
+    color: var(--accent);
+    padding: 10px 24px;
+    font-family: inherit;
+    font-size: 14px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-shadow: 0 0 6px var(--accent);
+  }
+  button:hover {
+    background: var(--accent);
+    color: #000;
+    text-shadow: none;
+    box-shadow: 0 0 16px var(--accent), 0 0 32px var(--accent);
+    border-color: var(--accent);
+  }
+  .pulse-key {
+    animation: keyPulse 1.2s ease-in-out infinite;
+  }
+  @keyframes keyPulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+  <div class="game-container">
+    <div>
+      <h1>KITT RIS</h1>
+      <div class="board-shake" id="board-shake">
+        <div class="board-wrap">
+          <canvas id="board" width="300" height="600"></canvas>
+          <div class="board-flash" id="board-flash"></div>
+        </div>
+      </div>
+    </div>
+    <div class="sidebar">
+      <div class="panel">
+        <h2>SCORE</h2>
+        <div class="stat" id="score">0</div>
+      </div>
+      <div class="panel">
+        <h2>LEVEL</h2>
+        <div class="stat" id="level">1</div>
+      </div>
+      <div class="panel">
+        <h2>LINES</h2>
+        <div class="stat" id="lines">0</div>
+      </div>
+      <div class="panel">
+        <h2>NEXT</h2>
+        <div class="next-canvas-wrap">
+          <canvas id="next" width="120" height="120"></canvas>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>CONTROLS</h2>
+        <div class="controls">
+          <div><span>&larr; &rarr;</span> Move</div>
+          <div><span>&uarr;</span> Rotate</div>
+          <div><span>&darr;</span> Soft Drop</div>
+          <div><span>SPACE</span> Hard Drop</div>
+          <div><span>P</span> Pause</div>
+          <div><span>M</span> Mute</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="start-overlay active" id="start-overlay">
+    <div class="start-box">
+      <h2>KITT RIS</h2>
+      <p>Synthwave / Block Annihilator</p>
+      <p class="pulse-key">PRESS ANY KEY TO BEGIN</p>
+    </div>
+  </div>
+
+  <div class="game-over-overlay" id="overlay">
+    <div class="game-over-box">
+      <h2 id="overlay-title">GAME OVER</h2>
+      <p>Final Score: <span id="final-score">0</span></p>
+      <button id="restart-btn">RESTART</button>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const COLS = 10;
+  const ROWS = 20;
+  const BLOCK = 30;
+  const NEXT_BLOCK = 24;
+
+  const board = document.getElementById('board');
+  const ctx = board.getContext('2d');
+  const nextCanvas = document.getElementById('next');
+  const nextCtx = nextCanvas.getContext('2d');
+  const boardShake = document.getElementById('board-shake');
+  const boardWrap = document.querySelector('.board-wrap');
+  const boardFlash = document.getElementById('board-flash');
+
+  const scoreEl = document.getElementById('score');
+  const levelEl = document.getElementById('level');
+  const linesEl = document.getElementById('lines');
+  const overlay = document.getElementById('overlay');
+  const overlayTitle = document.getElementById('overlay-title');
+  const finalScoreEl = document.getElementById('final-score');
+  const restartBtn = document.getElementById('restart-btn');
+  const startOverlay = document.getElementById('start-overlay');
+
+  const SHAPES = {
+    I: { color: '#00f0f0', blocks: [
+      [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],
+      [[0,0,1,0],[0,0,1,0],[0,0,1,0],[0,0,1,0]],
+      [[0,0,0,0],[0,0,0,0],[1,1,1,1],[0,0,0,0]],
+      [[0,1,0,0],[0,1,0,0],[0,1,0,0],[0,1,0,0]]
+    ]},
+    O: { color: '#f0f000', blocks: [
+      [[1,1],[1,1]],
+      [[1,1],[1,1]],
+      [[1,1],[1,1]],
+      [[1,1],[1,1]]
+    ]},
+    T: { color: '#a000f0', blocks: [
+      [[0,1,0],[1,1,1],[0,0,0]],
+      [[0,1,0],[0,1,1],[0,1,0]],
+      [[0,0,0],[1,1,1],[0,1,0]],
+      [[0,1,0],[1,1,0],[0,1,0]]
+    ]},
+    S: { color: '#00f000', blocks: [
+      [[0,1,1],[1,1,0],[0,0,0]],
+      [[0,1,0],[0,1,1],[0,0,1]],
+      [[0,0,0],[0,1,1],[1,1,0]],
+      [[1,0,0],[1,1,0],[0,1,0]]
+    ]},
+    Z: { color: '#f00000', blocks: [
+      [[1,1,0],[0,1,1],[0,0,0]],
+      [[0,0,1],[0,1,1],[0,1,0]],
+      [[0,0,0],[1,1,0],[0,1,1]],
+      [[0,1,0],[1,1,0],[1,0,0]]
+    ]},
+    J: { color: '#0000f0', blocks: [
+      [[1,0,0],[1,1,1],[0,0,0]],
+      [[0,1,1],[0,1,0],[0,1,0]],
+      [[0,0,0],[1,1,1],[0,0,1]],
+      [[0,1,0],[0,1,0],[1,1,0]]
+    ]},
+    L: { color: '#f0a000', blocks: [
+      [[0,0,1],[1,1,1],[0,0,0]],
+      [[0,1,0],[0,1,0],[0,1,1]],
+      [[0,0,0],[1,1,1],[1,0,0]],
+      [[1,1,0],[0,1,0],[0,1,0]]
+    ]}
+  };
+  const TYPES = Object.keys(SHAPES);
+
+  // ============================================================
+  //  AUDIO  ENGINE
+  // ============================================================
+  const Audio = (() => {
+    let actx = null;
+    let masterGain, musicGain, sfxGain;
+    let bgmRunning = false;
+    let muted = false;
+    let nextStepTime = 0;
+    let step = 0;
+    let schedulerId = null;
+    let schedulerWorker = null;
+    const activeMusicNodes = new Set();
+    const TEMPO = 132; // BPM
+    const STEPS_PER_BEAT = 4;
+    const STEPS_PER_BAR = 16;
+    const TOTAL_STEPS = 64; // 4 bars
+    const LOOKAHEAD_MS = 25;
+    const SCHEDULE_AHEAD_TIME = 0.28;
+    const BGM_START_DELAY = 0.08;
+
+    // Pre-built noise buffer
+    let noiseBuf = null;
+    function buildNoise() {
+      if (!actx) return;
+      const len = actx.sampleRate * 1.0;
+      noiseBuf = actx.createBuffer(1, len, actx.sampleRate);
+      const d = noiseBuf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    }
+
+    function reportAudioError(label, err) {
+      console.warn(`[audio] ${label}`, err);
+    }
+
+    function safeDisconnect(node) {
+      if (!node) return;
+      try { node.disconnect(); } catch (_) {}
+    }
+
+    function cleanupAt(audioTime, nodes, registry) {
+      const delay = Math.max(0, (audioTime - (actx ? actx.currentTime : 0)) * 1000) + 80;
+      setTimeout(() => {
+        for (const node of nodes) {
+          safeDisconnect(node);
+          if (registry) registry.delete(node);
+        }
+      }, delay);
+    }
+
+    function cleanupMusicAt(audioTime, nodes) {
+      for (const node of nodes) activeMusicNodes.add(node);
+      cleanupAt(audioTime, nodes, activeMusicNodes);
+    }
+
+    function disconnectActiveMusicNodes() {
+      for (const node of activeMusicNodes) safeDisconnect(node);
+      activeMusicNodes.clear();
+    }
+
+    function init() {
+      if (actx) return;
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) {
+        console.warn('[audio] Web Audio API is not available in this browser');
+        return;
+      }
+      actx = new AC();
+      masterGain = actx.createGain();
+      masterGain.gain.value = 0.7;
+      masterGain.connect(actx.destination);
+      musicGain = actx.createGain();
+      musicGain.gain.value = 0.55;
+      musicGain.connect(masterGain);
+      sfxGain = actx.createGain();
+      sfxGain.gain.value = 0.9;
+      sfxGain.connect(masterGain);
+      buildNoise();
+      actx.addEventListener('statechange', () => {
+        if (bgmRunning && actx.state === 'running') scheduler();
+      });
+    }
+
+    function resume() {
+      init();
+      if (!actx || actx.state === 'running') return Promise.resolve();
+      return actx.resume().catch(err => reportAudioError('resume failed', err));
+    }
+
+    function canPlayNow() {
+      if (!actx) return false;
+      if (actx.state === 'suspended') resume();
+      return actx.state === 'running';
+    }
+
+    function noiseSource() {
+      if (!noiseBuf) buildNoise();
+      const s = actx.createBufferSource();
+      s.buffer = noiseBuf;
+      s.loop = true;
+      return s;
+    }
+
+    // ----------- BGM patterns -----------
+    // Notes encoded as MIDI numbers; 0 = rest
+    // 4 bars, 16 steps each = 64 steps
+    // Synthwave-y minor key (A minor)
+    const BASS_PATTERN = [
+      // bar 1: A
+      45,0,45,0, 0,45,0,57, 45,0,45,0, 48,0,52,0,
+      // bar 2: F
+      41,0,41,0, 0,41,0,53, 41,0,41,0, 48,0,53,0,
+      // bar 3: G
+      43,0,43,0, 0,43,0,55, 43,0,43,0, 50,0,55,0,
+      // bar 4: E (V)
+      40,0,40,0, 0,40,0,52, 40,0,40,0, 47,0,52,0,
+    ];
+
+    // Lead arpeggio (sparser, hooky)
+    const LEAD_PATTERN = [
+      // bar 1: Am arp + melody
+      0,0,69,0, 72,0,76,0, 0,0,79,0, 76,0,72,0,
+      // bar 2: F
+      0,0,65,0, 69,0,72,0, 0,0,77,0, 72,0,69,0,
+      // bar 3: G
+      0,0,67,0, 71,0,74,0, 0,0,79,0, 74,0,71,0,
+      // bar 4: E -> hooky lift
+      0,0,64,0, 68,0,71,0, 0,0,76,0, 79,0,76,72
+    ];
+
+    // Pad chord triggers (every 16 steps = 1 bar)
+    const PAD_PATTERN = [
+      // each entry is array of MIDI notes for chord, or null
+      ['A3','C4','E4'], null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+      ['F3','A3','C4'], null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+      ['G3','B3','D4'], null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+      ['E3','G#3','B3'], null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+    ];
+
+    function midiToFreq(m) {
+      return 440 * Math.pow(2, (m - 69) / 12);
+    }
+    function noteToMidi(n) {
+      // e.g., A3, C#4, G#3
+      const map = { C:0, 'C#':1, D:2, 'D#':3, E:4, F:5, 'F#':6, G:7, 'G#':8, A:9, 'A#':10, B:11 };
+      const m = n.match(/^([A-G]#?)(-?\d+)$/);
+      if (!m) return 0;
+      return (parseInt(m[2]) + 1) * 12 + map[m[1]];
+    }
+    function noteFreq(n) { return midiToFreq(noteToMidi(n)); }
+
+    // ----------- Voice generators (BGM) -----------
+    function bgmBass(midi, when) {
+      const f = midiToFreq(midi);
+      const o1 = actx.createOscillator();
+      o1.type = 'sawtooth';
+      o1.frequency.value = f;
+      const o2 = actx.createOscillator();
+      o2.type = 'square';
+      o2.frequency.value = f / 2;
+      const filt = actx.createBiquadFilter();
+      filt.type = 'lowpass';
+      filt.Q.value = 6;
+      filt.frequency.setValueAtTime(1400, when);
+      filt.frequency.exponentialRampToValueAtTime(220, when + 0.18);
+      const g = actx.createGain();
+      g.gain.setValueAtTime(0, when);
+      g.gain.linearRampToValueAtTime(0.55, when + 0.005);
+      g.gain.exponentialRampToValueAtTime(0.001, when + 0.22);
+      o1.connect(filt); o2.connect(filt);
+      filt.connect(g).connect(musicGain);
+      o1.start(when); o2.start(when);
+      o1.stop(when + 0.25); o2.stop(when + 0.25);
+      cleanupMusicAt(when + 0.28, [o1, o2, filt, g]);
+    }
+
+    function bgmLead(midi, when) {
+      const f = midiToFreq(midi);
+      const o1 = actx.createOscillator();
+      o1.type = 'sawtooth';
+      o1.frequency.value = f;
+      const o2 = actx.createOscillator();
+      o2.type = 'sawtooth';
+      o2.frequency.value = f * 1.0075; // detune
+      const filt = actx.createBiquadFilter();
+      filt.type = 'lowpass';
+      filt.Q.value = 4;
+      filt.frequency.setValueAtTime(3500, when);
+      filt.frequency.exponentialRampToValueAtTime(900, when + 0.4);
+      const g = actx.createGain();
+      g.gain.setValueAtTime(0, when);
+      g.gain.linearRampToValueAtTime(0.16, when + 0.01);
+      g.gain.linearRampToValueAtTime(0.10, when + 0.08);
+      g.gain.exponentialRampToValueAtTime(0.001, when + 0.45);
+      // Subtle delay (slap)
+      const delay = actx.createDelay();
+      delay.delayTime.value = 60 / TEMPO / 2; // eighth-note
+      const fb = actx.createGain();
+      fb.gain.value = 0.3;
+      const wet = actx.createGain();
+      wet.gain.value = 0.25;
+      o1.connect(filt); o2.connect(filt);
+      filt.connect(g);
+      g.connect(musicGain);
+      g.connect(delay);
+      delay.connect(fb).connect(delay);
+      delay.connect(wet).connect(musicGain);
+      o1.start(when); o2.start(when);
+      o1.stop(when + 0.5); o2.stop(when + 0.5);
+      cleanupMusicAt(when + 1.45, [o1, o2, filt, g, delay, fb, wet]);
+    }
+
+    function bgmPad(notes, when, duration) {
+      const filt = actx.createBiquadFilter();
+      filt.type = 'lowpass';
+      filt.frequency.value = 1400;
+      const g = actx.createGain();
+      const nodes = [filt, g];
+      g.gain.setValueAtTime(0, when);
+      g.gain.linearRampToValueAtTime(0.05, when + 0.4);
+      g.gain.linearRampToValueAtTime(0.045, when + duration - 0.3);
+      g.gain.exponentialRampToValueAtTime(0.001, when + duration);
+      filt.connect(g).connect(musicGain);
+      for (const n of notes) {
+        const f = noteFreq(n);
+        const o1 = actx.createOscillator();
+        o1.type = 'sawtooth';
+        o1.frequency.value = f;
+        const o2 = actx.createOscillator();
+        o2.type = 'sawtooth';
+        o2.frequency.value = f * 1.005;
+        o1.connect(filt); o2.connect(filt);
+        o1.start(when); o2.start(when);
+        o1.stop(when + duration + 0.05); o2.stop(when + duration + 0.05);
+        nodes.push(o1, o2);
+      }
+      cleanupMusicAt(when + duration + 0.12, nodes);
+    }
+
+    function bgmKick(when) {
+      const o = actx.createOscillator();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(160, when);
+      o.frequency.exponentialRampToValueAtTime(45, when + 0.1);
+      const g = actx.createGain();
+      g.gain.setValueAtTime(0, when);
+      g.gain.linearRampToValueAtTime(0.7, when + 0.005);
+      g.gain.exponentialRampToValueAtTime(0.001, when + 0.18);
+      o.connect(g).connect(musicGain);
+      o.start(when); o.stop(when + 0.2);
+      cleanupMusicAt(when + 0.24, [o, g]);
+      // click
+      const click = noiseSource();
+      const cf = actx.createBiquadFilter();
+      cf.type = 'highpass'; cf.frequency.value = 2000;
+      const cg = actx.createGain();
+      cg.gain.setValueAtTime(0.2, when);
+      cg.gain.exponentialRampToValueAtTime(0.001, when + 0.02);
+      click.connect(cf).connect(cg).connect(musicGain);
+      click.start(when); click.stop(when + 0.03);
+      cleanupMusicAt(when + 0.07, [click, cf, cg]);
+    }
+
+    function bgmSnare(when) {
+      const n = noiseSource();
+      const f = actx.createBiquadFilter();
+      f.type = 'highpass'; f.frequency.value = 1200;
+      const g = actx.createGain();
+      g.gain.setValueAtTime(0.35, when);
+      g.gain.exponentialRampToValueAtTime(0.001, when + 0.12);
+      n.connect(f).connect(g).connect(musicGain);
+      n.start(when); n.stop(when + 0.13);
+      cleanupMusicAt(when + 0.17, [n, f, g]);
+      // tonal body
+      const o = actx.createOscillator();
+      o.type = 'triangle';
+      o.frequency.setValueAtTime(220, when);
+      o.frequency.exponentialRampToValueAtTime(110, when + 0.08);
+      const og = actx.createGain();
+      og.gain.setValueAtTime(0.18, when);
+      og.gain.exponentialRampToValueAtTime(0.001, when + 0.1);
+      o.connect(og).connect(musicGain);
+      o.start(when); o.stop(when + 0.11);
+      cleanupMusicAt(when + 0.15, [o, og]);
+    }
+
+    function bgmHat(when, open) {
+      const n = noiseSource();
+      const f = actx.createBiquadFilter();
+      f.type = 'highpass'; f.frequency.value = 7500;
+      const g = actx.createGain();
+      const dur = open ? 0.16 : 0.04;
+      g.gain.setValueAtTime(open ? 0.08 : 0.06, when);
+      g.gain.exponentialRampToValueAtTime(0.001, when + dur);
+      n.connect(f).connect(g).connect(musicGain);
+      n.start(when); n.stop(when + dur + 0.01);
+      cleanupMusicAt(when + dur + 0.05, [n, f, g]);
+    }
+
+    // ----------- Scheduler -----------
+    function scheduleStep(s, when) {
+      // Drums
+      // Kick: steps 0, 8 of each bar (every beat 0 and beat 2)
+      const stepInBar = s % STEPS_PER_BAR;
+      if (stepInBar % 8 === 0) bgmKick(when);
+      // Snare: beat 2 of each bar (step 4 and step 12)
+      if (stepInBar === 4 || stepInBar === 12) bgmSnare(when);
+      // Hihat closed every other 16th
+      if (stepInBar % 2 === 0) bgmHat(when, false);
+      // Open hat on the 'and' of beat 4 (step 14)
+      if (stepInBar === 14) bgmHat(when, true);
+
+      // Bass
+      const b = BASS_PATTERN[s];
+      if (b) bgmBass(b, when);
+
+      // Lead
+      const l = LEAD_PATTERN[s];
+      if (l) bgmLead(l, when);
+
+      // Pad: trigger at bar starts (every 16 steps)
+      const padIdx = s;
+      const pad = PAD_PATTERN[padIdx];
+      if (pad) {
+        const barDur = (60 / TEMPO) * 4;
+        bgmPad(pad, when, barDur * 0.95);
+      }
+    }
+
+    function scheduler() {
+      if (!bgmRunning || !actx || actx.state !== 'running') return;
+      const sixteenth = 60 / TEMPO / STEPS_PER_BEAT;
+      const now = actx.currentTime;
+      const horizon = now + SCHEDULE_AHEAD_TIME;
+
+      // If the main thread was blocked, skip missed ticks instead of dumping
+      // stale notes into the graph all at once. The step clock remains tied to
+      // AudioContext time, so loop timing does not drift.
+      if (nextStepTime < now - sixteenth) {
+        const missed = Math.floor((now - nextStepTime) / sixteenth) + 1;
+        step = (step + missed) % TOTAL_STEPS;
+        nextStepTime += missed * sixteenth;
+      }
+
+      while (nextStepTime < horizon) {
+        scheduleStep(step, nextStepTime);
+        nextStepTime += sixteenth;
+        step = (step + 1) % TOTAL_STEPS;
+      }
+    }
+
+    function startSchedulerClock() {
+      stopSchedulerClock();
+
+      if (window.Worker && window.Blob && window.URL) {
+        const workerCode = `
+          let timer = null;
+          self.onmessage = (event) => {
+            const data = event.data || {};
+            if (data.type === 'start') {
+              if (timer) clearInterval(timer);
+              timer = setInterval(() => self.postMessage({ type: 'tick' }), data.interval || 25);
+            } else if (data.type === 'stop') {
+              if (timer) clearInterval(timer);
+              timer = null;
+            }
+          };
+        `;
+        try {
+          const url = URL.createObjectURL(new Blob([workerCode], { type: 'application/javascript' }));
+          schedulerWorker = new Worker(url);
+          URL.revokeObjectURL(url);
+          schedulerWorker.onmessage = () => scheduler();
+          schedulerWorker.onerror = err => reportAudioError('scheduler worker error', err);
+          schedulerWorker.postMessage({ type: 'start', interval: LOOKAHEAD_MS });
+          return;
+        } catch (err) {
+          reportAudioError('scheduler worker unavailable', err);
+          schedulerWorker = null;
+        }
+      }
+
+      schedulerId = setInterval(scheduler, LOOKAHEAD_MS);
+    }
+
+    function stopSchedulerClock() {
+      if (schedulerWorker) {
+        schedulerWorker.postMessage({ type: 'stop' });
+        schedulerWorker.terminate();
+        schedulerWorker = null;
+      }
+      if (schedulerId) {
+        clearInterval(schedulerId);
+        schedulerId = null;
+      }
+    }
+
+    function startBGM() {
+      init();
+      if (!actx || bgmRunning) return;
+      if (actx.state !== 'running') {
+        resume().then(() => {
+          if (!bgmRunning) startBGM();
+        });
+        return;
+      }
+      bgmRunning = true;
+      step = 0;
+      nextStepTime = actx.currentTime + BGM_START_DELAY;
+      // Fade music in
+      musicGain.gain.cancelScheduledValues(actx.currentTime);
+      musicGain.gain.setValueAtTime(0, actx.currentTime);
+      musicGain.gain.linearRampToValueAtTime(muted ? 0 : 0.55, actx.currentTime + 0.6);
+      scheduler();
+      startSchedulerClock();
+    }
+
+    function stopBGM() {
+      bgmRunning = false;
+      stopSchedulerClock();
+      disconnectActiveMusicNodes();
+      if (musicGain) {
+        musicGain.gain.cancelScheduledValues(actx.currentTime);
+        musicGain.gain.linearRampToValueAtTime(0, actx.currentTime + 0.4);
+      }
+    }
+
+    function setMuted(m) {
+      muted = m;
+      if (!actx) return;
+      masterGain.gain.cancelScheduledValues(actx.currentTime);
+      masterGain.gain.linearRampToValueAtTime(muted ? 0 : 0.7, actx.currentTime + 0.1);
+    }
+
+    // ----------- SFX -----------
+    function playMove() {
+      if (!canPlayNow()) return;
+      const t = actx.currentTime;
+      const o = actx.createOscillator();
+      o.type = 'square';
+      o.frequency.setValueAtTime(900, t);
+      o.frequency.exponentialRampToValueAtTime(620, t + 0.04);
+      const g = actx.createGain();
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(0.08, t + 0.005);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+      o.connect(g).connect(sfxGain);
+      o.start(t); o.stop(t + 0.07);
+      cleanupAt(t + 0.1, [o, g]);
+    }
+
+    function playRotate() {
+      if (!canPlayNow()) return;
+      const t = actx.currentTime;
+      const o = actx.createOscillator();
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(1100, t);
+      o.frequency.exponentialRampToValueAtTime(2200, t + 0.05);
+      const f = actx.createBiquadFilter();
+      f.type = 'highpass'; f.frequency.value = 700;
+      const g = actx.createGain();
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(0.08, t + 0.005);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.07);
+      o.connect(f).connect(g).connect(sfxGain);
+      o.start(t); o.stop(t + 0.08);
+      cleanupAt(t + 0.11, [o, f, g]);
+    }
+
+    function playDrop() {
+      if (!canPlayNow()) return;
+      const t = actx.currentTime;
+      const o = actx.createOscillator();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(360, t);
+      o.frequency.exponentialRampToValueAtTime(120, t + 0.1);
+      const g = actx.createGain();
+      g.gain.setValueAtTime(0.18, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.13);
+      o.connect(g).connect(sfxGain);
+      o.start(t); o.stop(t + 0.14);
+      cleanupAt(t + 0.18, [o, g]);
+
+      const n = noiseSource();
+      const nf = actx.createBiquadFilter();
+      nf.type = 'lowpass';
+      nf.frequency.setValueAtTime(2400, t);
+      nf.frequency.exponentialRampToValueAtTime(800, t + 0.18);
+      const ng = actx.createGain();
+      ng.gain.setValueAtTime(0.09, t);
+      ng.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+      n.connect(nf).connect(ng).connect(sfxGain);
+      n.start(t); n.stop(t + 0.2);
+      cleanupAt(t + 0.24, [n, nf, ng]);
+    }
+
+    function playHardDrop() {
+      if (!canPlayNow()) return;
+      const t = actx.currentTime;
+      // big subby thud
+      const o = actx.createOscillator();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(220, t);
+      o.frequency.exponentialRampToValueAtTime(38, t + 0.18);
+      const g = actx.createGain();
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(0.55, t + 0.005);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+      o.connect(g).connect(sfxGain);
+      o.start(t); o.stop(t + 0.3);
+      cleanupAt(t + 0.34, [o, g]);
+
+      // body crack
+      const n = noiseSource();
+      const nf = actx.createBiquadFilter();
+      nf.type = 'bandpass';
+      nf.frequency.value = 250; nf.Q.value = 1.2;
+      const ng = actx.createGain();
+      ng.gain.setValueAtTime(0.4, t);
+      ng.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+      n.connect(nf).connect(ng).connect(sfxGain);
+      n.start(t); n.stop(t + 0.14);
+      cleanupAt(t + 0.18, [n, nf, ng]);
+    }
+
+    function playLineClear(numLines) {
+      if (!canPlayNow()) return;
+      const t = actx.currentTime;
+      const isTetris = numLines >= 4;
+
+      // Big white-noise explosion sweep
+      const n = noiseSource();
+      const nf = actx.createBiquadFilter();
+      nf.type = 'bandpass';
+      nf.Q.value = 0.8;
+      nf.frequency.setValueAtTime(2800, t);
+      nf.frequency.exponentialRampToValueAtTime(180, t + (isTetris ? 0.85 : 0.5));
+      const ng = actx.createGain();
+      ng.gain.setValueAtTime(0, t);
+      ng.gain.linearRampToValueAtTime(isTetris ? 0.45 : 0.32, t + 0.02);
+      ng.gain.exponentialRampToValueAtTime(0.001, t + (isTetris ? 0.95 : 0.55));
+      n.connect(nf).connect(ng).connect(sfxGain);
+      n.start(t); n.stop(t + 1.1);
+      cleanupAt(t + 1.15, [n, nf, ng]);
+
+      // Triumphant chord (rising)
+      const baseMidi = isTetris ? 69 : 67; // A4 / G4
+      const chord = isTetris ? [0, 4, 7, 12, 16] : [0, 4, 7, 12];
+      for (const off of chord) {
+        const f = midiToFreq(baseMidi + off);
+        const o = actx.createOscillator();
+        o.type = 'sawtooth';
+        o.frequency.setValueAtTime(f * 0.5, t);
+        o.frequency.exponentialRampToValueAtTime(f, t + 0.18);
+        const filt = actx.createBiquadFilter();
+        filt.type = 'lowpass';
+        filt.frequency.setValueAtTime(800, t);
+        filt.frequency.exponentialRampToValueAtTime(4500, t + 0.2);
+        const g = actx.createGain();
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(0.09, t + 0.05);
+        g.gain.exponentialRampToValueAtTime(0.001, t + (isTetris ? 0.85 : 0.55));
+        o.connect(filt).connect(g).connect(sfxGain);
+        o.start(t); o.stop(t + 1.0);
+        cleanupAt(t + 1.05, [o, filt, g]);
+      }
+
+      // sub boom
+      const sub = actx.createOscillator();
+      sub.type = 'sine';
+      sub.frequency.setValueAtTime(110, t);
+      sub.frequency.exponentialRampToValueAtTime(40, t + 0.4);
+      const sg = actx.createGain();
+      sg.gain.setValueAtTime(0, t);
+      sg.gain.linearRampToValueAtTime(isTetris ? 0.6 : 0.35, t + 0.01);
+      sg.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+      sub.connect(sg).connect(sfxGain);
+      sub.start(t); sub.stop(t + 0.55);
+      cleanupAt(t + 0.6, [sub, sg]);
+    }
+
+    function playGameOver() {
+      if (!canPlayNow()) return;
+      const t = actx.currentTime;
+      const o = actx.createOscillator();
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(660, t);
+      o.frequency.exponentialRampToValueAtTime(70, t + 1.5);
+      const f = actx.createBiquadFilter();
+      f.type = 'lowpass';
+      f.frequency.setValueAtTime(2400, t);
+      f.frequency.exponentialRampToValueAtTime(180, t + 1.5);
+      const g = actx.createGain();
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(0.32, t + 0.02);
+      g.gain.linearRampToValueAtTime(0.30, t + 1.0);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 1.7);
+      o.connect(f).connect(g).connect(sfxGain);
+      o.start(t); o.stop(t + 1.8);
+      cleanupAt(t + 1.85, [o, f, g]);
+
+      // sub fall
+      const sub = actx.createOscillator();
+      sub.type = 'sine';
+      sub.frequency.setValueAtTime(220, t);
+      sub.frequency.exponentialRampToValueAtTime(28, t + 1.8);
+      const sg = actx.createGain();
+      sg.gain.setValueAtTime(0.25, t);
+      sg.gain.exponentialRampToValueAtTime(0.001, t + 1.9);
+      sub.connect(sg).connect(sfxGain);
+      sub.start(t); sub.stop(t + 2.0);
+      cleanupAt(t + 2.05, [sub, sg]);
+    }
+
+    return {
+      init, resume, startBGM, stopBGM, setMuted,
+      isMuted: () => muted,
+      ready: () => !!actx,
+      playMove, playRotate, playDrop, playHardDrop, playLineClear, playGameOver
+    };
+  })();
+
+  // ============================================================
+  //  PARTICLES
+  // ============================================================
+  const particles = [];
+  const MAX_PARTICLES = 900;
+  function rand(min, max) { return min + Math.random() * (max - min); }
+  function trimParticles() {
+    if (particles.length > MAX_PARTICLES) {
+      particles.splice(0, particles.length - MAX_PARTICLES);
+    }
+  }
+
+  function spawnExplosion(cx, cy, color, count) {
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = rand(60, 320);
+      particles.push({
+        x: cx + rand(-2, 2),
+        y: cy + rand(-2, 2),
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - rand(40, 120),
+        size: rand(2, 6),
+        startSize: 0,
+        color,
+        life: 0,
+        maxLife: rand(550, 800),
+        gravity: rand(450, 700),
+        friction: 0.985,
+        trail: false,
+        glow: true
+      });
+    }
+    trimParticles();
+  }
+  // For trail under falling piece
+  function spawnTrail(cx, cy, color) {
+    particles.push({
+      x: cx + rand(-6, 6),
+      y: cy + rand(-2, 2),
+      vx: rand(-15, 15),
+      vy: rand(20, 60),
+      size: rand(1.5, 3),
+      color,
+      life: 0,
+      maxLife: rand(220, 400),
+      gravity: 0,
+      friction: 0.96,
+      trail: true,
+      glow: true
+    });
+    trimParticles();
+  }
+
+  function updateParticles(dt) {
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.life += dt;
+      if (p.life >= p.maxLife) { particles.splice(i, 1); continue; }
+      p.vx *= p.friction;
+      p.vy = p.vy * p.friction + p.gravity * (dt / 1000);
+      p.x += p.vx * (dt / 1000);
+      p.y += p.vy * (dt / 1000);
+    }
+  }
+
+  function drawParticles() {
+    ctx.save();
+    for (const p of particles) {
+      const t = p.life / p.maxLife;
+      const alpha = 1 - t;
+      const size = p.size * (1 - t * 0.6);
+      ctx.globalAlpha = Math.max(0, alpha);
+      if (p.glow) {
+        ctx.shadowColor = p.color;
+        ctx.shadowBlur = p.trail ? 6 : 14;
+      }
+      ctx.fillStyle = p.color;
+      ctx.fillRect(p.x - size / 2, p.y - size / 2, size, size);
+    }
+    ctx.restore();
+  }
+
+  // ============================================================
+  //  SCREEN SHAKE
+  // ============================================================
+  let shake = { intensity: 0, until: 0, start: 0, duration: 0 };
+  function triggerShake(intensity, durationMs) {
+    const now = performance.now();
+    shake.intensity = intensity;
+    shake.start = now;
+    shake.duration = durationMs;
+    shake.until = now + durationMs;
+  }
+  function applyShake() {
+    const now = performance.now();
+    if (now > shake.until) {
+      boardShake.style.transform = '';
+      return;
+    }
+    const remaining = (shake.until - now) / shake.duration;
+    const i = shake.intensity * remaining;
+    const dx = (Math.random() - 0.5) * 2 * i;
+    const dy = (Math.random() - 0.5) * 2 * i;
+    boardShake.style.transform = `translate(${dx.toFixed(2)}px, ${dy.toFixed(2)}px)`;
+  }
+
+  // ============================================================
+  //  SCORE POPUPS
+  // ============================================================
+  function spawnScorePopup(amount, label) {
+    const div = document.createElement('div');
+    div.className = 'score-popup';
+    const a = document.createElement('div');
+    a.className = 'amount';
+    a.textContent = '+' + amount;
+    div.appendChild(a);
+    if (label) {
+      const l = document.createElement('div');
+      l.className = 'label';
+      l.textContent = label;
+      div.appendChild(l);
+    }
+    boardWrap.appendChild(div);
+    requestAnimationFrame(() => requestAnimationFrame(() => div.classList.add('float')));
+    setTimeout(() => div.remove(), 1300);
+  }
+
+  // ============================================================
+  //  GAME STATE
+  // ============================================================
+  let grid, current, next, score, lines, level, dropInterval, lastDrop, gameOver, paused, rafId;
+  let isClearing = false;
+  let pendingFlashRows = null;       // rows currently flashing white
+  let landFlashes = [];              // {x, y, until}
+  let lastFrameTime = 0;
+  let started = false;
+
+  function createGrid() {
+    return Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+  }
+
+  function randomPiece() {
+    const type = TYPES[Math.floor(Math.random() * TYPES.length)];
+    return {
+      type,
+      rotation: 0,
+      x: Math.floor((COLS - SHAPES[type].blocks[0].length) / 2),
+      y: 0
+    };
+  }
+
+  function getMatrix(piece) {
+    return SHAPES[piece.type].blocks[piece.rotation];
+  }
+
+  function collides(piece, dx = 0, dy = 0, rotation = piece.rotation) {
+    const matrix = SHAPES[piece.type].blocks[rotation];
+    for (let r = 0; r < matrix.length; r++) {
+      for (let c = 0; c < matrix[r].length; c++) {
+        if (!matrix[r][c]) continue;
+        const x = piece.x + c + dx;
+        const y = piece.y + r + dy;
+        if (x < 0 || x >= COLS || y >= ROWS) return true;
+        if (y >= 0 && grid[y][x]) return true;
+      }
+    }
+    return false;
+  }
+
+  function merge(piece) {
+    const matrix = getMatrix(piece);
+    const color = SHAPES[piece.type].color;
+    const lockedCells = [];
+    for (let r = 0; r < matrix.length; r++) {
+      for (let c = 0; c < matrix[r].length; c++) {
+        if (matrix[r][c]) {
+          const y = piece.y + r;
+          const x = piece.x + c;
+          if (y >= 0) {
+            grid[y][x] = color;
+            lockedCells.push({ x, y });
+          }
+        }
+      }
+    }
+    // Brief flash on landed blocks
+    const until = performance.now() + 130;
+    for (const cell of lockedCells) landFlashes.push({ ...cell, until });
+  }
+
+  function clearLines() {
+    const clearedRows = [];
+    for (let r = ROWS - 1; r >= 0; r--) {
+      if (grid[r].every(cell => cell)) clearedRows.push(r);
+    }
+    if (clearedRows.length === 0) return;
+
+    // Save the colors so we can spawn matching particles later
+    const savedRowColors = clearedRows.map(r => grid[r].slice());
+
+    // Step 1: flash white briefly (50ms) — replace those rows with white
+    pendingFlashRows = new Set(clearedRows);
+
+    isClearing = true;
+
+    setTimeout(() => {
+      // Step 2: spawn particles for each block in cleared rows
+      clearedRows.forEach((r, idx) => {
+        const colors = savedRowColors[idx];
+        for (let c = 0; c < COLS; c++) {
+          const color = colors[c];
+          const cx = c * BLOCK + BLOCK / 2;
+          const cy = r * BLOCK + BLOCK / 2;
+          spawnExplosion(cx, cy, color, 12);
+        }
+      });
+
+      // Remove the rows
+      clearedRows.sort((a, b) => a - b);
+      for (let i = clearedRows.length - 1; i >= 0; i--) {
+        grid.splice(clearedRows[i], 1);
+        grid.unshift(Array(COLS).fill(null));
+      }
+      pendingFlashRows = null;
+
+      // Score
+      const cleared = clearedRows.length;
+      const points = [0, 100, 300, 500, 800][cleared];
+      const gained = points * level;
+      score += gained;
+      lines += cleared;
+      const newLevel = Math.floor(lines / 10) + 1;
+      if (newLevel !== level) {
+        level = newLevel;
+        dropInterval = Math.max(80, 1000 - (level - 1) * 90);
+      }
+      updateStats();
+
+      // Effects
+      const labels = ['', 'SINGLE', 'DOUBLE', 'TRIPLE', 'TETRIS'];
+      spawnScorePopup(gained, labels[cleared]);
+      Audio.playLineClear(cleared);
+      if (cleared === 4) {
+        triggerShake(8, 480);
+        boardFlash.classList.remove('active');
+        // restart animation
+        void boardFlash.offsetWidth;
+        boardFlash.classList.add('active');
+      } else {
+        triggerShake(3, 220);
+      }
+
+      isClearing = false;
+    }, 50);
+  }
+
+  function rotate() {
+    const newRotation = (current.rotation + 1) % 4;
+    const kicks = [0, -1, 1, -2, 2];
+    for (const kick of kicks) {
+      if (!collides(current, kick, 0, newRotation)) {
+        current.x += kick;
+        current.rotation = newRotation;
+        Audio.playRotate();
+        return;
+      }
+    }
+  }
+
+  function move(dx) {
+    if (!collides(current, dx, 0)) {
+      current.x += dx;
+      Audio.playMove();
+    }
+  }
+
+  function softDrop() {
+    if (!collides(current, 0, 1)) {
+      current.y += 1;
+      score += 1;
+      updateStats();
+    } else {
+      Audio.playDrop();
+      lockPiece();
+    }
+  }
+
+  function hardDrop() {
+    let dropped = 0;
+    while (!collides(current, 0, 1)) {
+      current.y += 1;
+      dropped++;
+    }
+    score += dropped * 2;
+    Audio.playHardDrop();
+    triggerShake(2.5, 140);
+    lockPiece();
+  }
+
+  function lockPiece() {
+    merge(current);
+    clearLines();
+    current = next;
+    next = randomPiece();
+    if (collides(current, 0, 0)) {
+      endGame();
+    }
+  }
+
+  function endGame() {
+    gameOver = true;
+    cancelAnimationFrame(rafId);
+    Audio.playGameOver();
+    Audio.stopBGM();
+    overlayTitle.textContent = 'GAME OVER';
+    finalScoreEl.textContent = score;
+    overlay.classList.add('active');
+  }
+
+  function updateStats() {
+    scoreEl.textContent = score;
+    levelEl.textContent = level;
+    linesEl.textContent = lines;
+  }
+
+  function drawBlock(context, x, y, size, color, opts) {
+    const px = x * size;
+    const py = y * size;
+    context.save();
+    context.shadowColor = color;
+    context.shadowBlur = (opts && opts.glow) || 12;
+    context.fillStyle = color;
+    context.fillRect(px, py, size, size);
+    context.restore();
+    context.fillStyle = 'rgba(255,255,255,0.35)';
+    context.fillRect(px, py, size, 4);
+    context.fillRect(px, py, 4, size);
+    context.fillStyle = 'rgba(0,0,0,0.4)';
+    context.fillRect(px, py + size - 4, size, 4);
+    context.fillRect(px + size - 4, py, 4, size);
+    context.strokeStyle = 'rgba(0,0,0,0.6)';
+    context.lineWidth = 1;
+    context.strokeRect(px + 0.5, py + 0.5, size - 1, size - 1);
+
+    // optional white overlay (for landing flash)
+    if (opts && opts.flash) {
+      context.fillStyle = `rgba(255,255,255,${opts.flash})`;
+      context.fillRect(px, py, size, size);
+    }
+  }
+
+  function drawGhost() {
+    let ghostY = current.y;
+    while (!collides(current, 0, ghostY - current.y + 1)) ghostY++;
+    const matrix = getMatrix(current);
+    ctx.save();
+    ctx.globalAlpha = 0.3;
+    ctx.shadowColor = '#ff0000';
+    ctx.shadowBlur = 10;
+    for (let r = 0; r < matrix.length; r++) {
+      for (let c = 0; c < matrix[r].length; c++) {
+        if (matrix[r][c]) {
+          const x = current.x + c;
+          const y = ghostY + r;
+          if (y >= 0) {
+            ctx.fillStyle = '#ff0000';
+            ctx.fillRect(x * BLOCK, y * BLOCK, BLOCK, BLOCK);
+            ctx.strokeStyle = '#ff0000';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x * BLOCK + 1, y * BLOCK + 1, BLOCK - 2, BLOCK - 2);
+          }
+        }
+      }
+    }
+    ctx.restore();
+  }
+
+  function drawBoard() {
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, board.width, board.height);
+
+    // Grid lines
+    ctx.strokeStyle = 'rgba(0, 255, 255, 0.06)';
+    ctx.lineWidth = 1;
+    for (let i = 1; i < COLS; i++) {
+      ctx.beginPath();
+      ctx.moveTo(i * BLOCK, 0);
+      ctx.lineTo(i * BLOCK, board.height);
+      ctx.stroke();
+    }
+    for (let i = 1; i < ROWS; i++) {
+      ctx.beginPath();
+      ctx.moveTo(0, i * BLOCK);
+      ctx.lineTo(board.width, i * BLOCK);
+      ctx.stroke();
+    }
+
+    // Build lookup of land flashes
+    const now = performance.now();
+    landFlashes = landFlashes.filter(f => f.until > now);
+    const flashMap = new Map();
+    for (const f of landFlashes) {
+      const remaining = (f.until - now) / 130;
+      flashMap.set(f.x + ',' + f.y, Math.max(0, remaining * 0.85));
+    }
+
+    // Existing blocks (with white-out for cleared rows pending removal)
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        if (grid[r][c]) {
+          const isFlashing = pendingFlashRows && pendingFlashRows.has(r);
+          if (isFlashing) {
+            drawBlock(ctx, c, r, BLOCK, '#ffffff', { glow: 24 });
+          } else {
+            const flashAmt = flashMap.get(c + ',' + r);
+            drawBlock(ctx, c, r, BLOCK, grid[r][c], { flash: flashAmt });
+          }
+        }
+      }
+    }
+
+    if (current && !gameOver && !isClearing) {
+      drawGhost();
+      const matrix = getMatrix(current);
+      const color = SHAPES[current.type].color;
+      for (let r = 0; r < matrix.length; r++) {
+        for (let c = 0; c < matrix[r].length; c++) {
+          if (matrix[r][c]) {
+            const y = current.y + r;
+            if (y >= 0) drawBlock(ctx, current.x + c, y, BLOCK, color);
+          }
+        }
+      }
+    }
+
+    // Particles on top of blocks
+    drawParticles();
+
+    if (paused && !gameOver) {
+      ctx.fillStyle = 'rgba(0,0,0,0.8)';
+      ctx.fillRect(0, 0, board.width, board.height);
+      ctx.save();
+      ctx.shadowColor = '#ff0000';
+      ctx.shadowBlur = 20;
+      ctx.fillStyle = '#ff0000';
+      ctx.font = 'bold 36px Courier New';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('PAUSED', board.width / 2, board.height / 2);
+      ctx.restore();
+    }
+  }
+
+  function drawNext() {
+    nextCtx.fillStyle = '#000';
+    nextCtx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
+    if (!next) return;
+    const matrix = getMatrix(next);
+    const color = SHAPES[next.type].color;
+    const size = matrix.length;
+    const offsetX = (nextCanvas.width - size * NEXT_BLOCK) / 2;
+    const offsetY = (nextCanvas.height - size * NEXT_BLOCK) / 2;
+    for (let r = 0; r < size; r++) {
+      for (let c = 0; c < size; c++) {
+        if (matrix[r][c]) {
+          const px = offsetX + c * NEXT_BLOCK;
+          const py = offsetY + r * NEXT_BLOCK;
+          nextCtx.save();
+          nextCtx.shadowColor = color;
+          nextCtx.shadowBlur = 10;
+          nextCtx.fillStyle = color;
+          nextCtx.fillRect(px, py, NEXT_BLOCK, NEXT_BLOCK);
+          nextCtx.restore();
+          nextCtx.fillStyle = 'rgba(255,255,255,0.35)';
+          nextCtx.fillRect(px, py, NEXT_BLOCK, 3);
+          nextCtx.fillRect(px, py, 3, NEXT_BLOCK);
+          nextCtx.fillStyle = 'rgba(0,0,0,0.4)';
+          nextCtx.fillRect(px, py + NEXT_BLOCK - 3, NEXT_BLOCK, 3);
+          nextCtx.fillRect(px + NEXT_BLOCK - 3, py, 3, NEXT_BLOCK);
+          nextCtx.strokeStyle = 'rgba(0,0,0,0.6)';
+          nextCtx.strokeRect(px + 0.5, py + 0.5, NEXT_BLOCK - 1, NEXT_BLOCK - 1);
+        }
+      }
+    }
+  }
+
+  let trailTimer = 0;
+  function spawnPieceTrail(dt) {
+    if (!current || gameOver || paused || isClearing) return;
+    trailTimer += dt;
+    if (trailTimer < 35) return;
+    trailTimer = 0;
+    const matrix = getMatrix(current);
+    const color = SHAPES[current.type].color;
+    // Only spawn on bottom-most cell of each column of the piece
+    const cols = matrix[0].length;
+    for (let c = 0; c < cols; c++) {
+      let bottomR = -1;
+      for (let r = matrix.length - 1; r >= 0; r--) {
+        if (matrix[r][c]) { bottomR = r; break; }
+      }
+      if (bottomR === -1) continue;
+      const x = current.x + c;
+      const y = current.y + bottomR;
+      if (y < 0 || y >= ROWS) continue;
+      const cx = x * BLOCK + BLOCK / 2;
+      const cy = y * BLOCK + BLOCK;
+      spawnTrail(cx, cy, color);
+    }
+  }
+
+  function tick(time) {
+    if (gameOver) return;
+    if (!lastDrop) lastDrop = time;
+    if (!lastFrameTime) lastFrameTime = time;
+    const dt = Math.min(50, time - lastFrameTime);
+    lastFrameTime = time;
+
+    if (!paused && !isClearing && time - lastDrop > dropInterval) {
+      if (!collides(current, 0, 1)) {
+        current.y += 1;
+      } else {
+        Audio.playDrop();
+        lockPiece();
+      }
+      lastDrop = time;
+    }
+
+    if (!paused && !isClearing) spawnPieceTrail(dt);
+    updateParticles(dt);
+    applyShake();
+    drawBoard();
+    drawNext();
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function startGame() {
+    grid = createGrid();
+    score = 0;
+    lines = 0;
+    level = 1;
+    dropInterval = 1000;
+    lastDrop = 0;
+    lastFrameTime = 0;
+    gameOver = false;
+    paused = false;
+    isClearing = false;
+    pendingFlashRows = null;
+    particles.length = 0;
+    landFlashes = [];
+    current = randomPiece();
+    next = randomPiece();
+    overlay.classList.remove('active');
+    updateStats();
+    cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(tick);
+    if (Audio.ready()) {
+      Audio.stopBGM();
+      // small delay so the stop fade clears
+      setTimeout(() => Audio.startBGM(), 80);
+    }
+  }
+
+  function firstStart() {
+    if (started) return;
+    started = true;
+    Audio.resume().then(() => {
+      startOverlay.classList.remove('active');
+      startGame();
+    });
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (!started) {
+      firstStart();
+      e.preventDefault();
+      return;
+    }
+    Audio.resume();
+    if (e.key === 'm' || e.key === 'M') {
+      Audio.setMuted(!Audio.isMuted());
+      return;
+    }
+    if (gameOver) return;
+    if (e.key === 'p' || e.key === 'P') {
+      paused = !paused;
+      if (!paused) lastDrop = performance.now();
+      return;
+    }
+    if (paused || isClearing) return;
+    switch (e.key) {
+      case 'ArrowLeft': move(-1); e.preventDefault(); break;
+      case 'ArrowRight': move(1); e.preventDefault(); break;
+      case 'ArrowDown': softDrop(); e.preventDefault(); break;
+      case 'ArrowUp': rotate(); e.preventDefault(); break;
+      case ' ': hardDrop(); e.preventDefault(); break;
+    }
+  });
+
+  // Mouse click also starts (so users without keyboard focus can begin)
+  startOverlay.addEventListener('click', firstStart);
+
+  restartBtn.addEventListener('click', () => {
+    Audio.resume().then(startGame);
+  });
+})();
+</script>
+</body>
+</html>
