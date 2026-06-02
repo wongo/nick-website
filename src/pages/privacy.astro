@@ -1,0 +1,203 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout title="隱私權政策 — 訂閱管家 / Submaster">
+  <main class="prose">
+    <h1>隱私權政策 / Privacy Policy — 訂閱管家（Submaster）</h1>
+    <p><em>最後更新日期：2026-06-02</em></p>
+
+    <h2>1. 我們是誰</h2>
+    <p><strong>訂閱管家（Submaster / サブスクマスター）</strong></p>
+    <p>聯絡信箱：wongo.w@gmail.com</p>
+
+    <h2>2. 我們收集哪些資料、為什麼收集</h2>
+    <table>
+      <thead>
+        <tr><th>類別</th><th>具體資料</th><th>用途</th><th>必要？</th><th>儲存位置</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>帳號</strong></td>
+          <td>Google 帳號 email、顯示名稱、大頭貼 URL</td>
+          <td>家庭共享（建立/加入家庭、辨識成員）</td>
+          <td>否 — 可純本機使用、不登入</td>
+          <td>Firebase Authentication</td>
+        </tr>
+        <tr>
+          <td><strong>家庭資料</strong></td>
+          <td>家庭名稱、邀請碼、成員名單</td>
+          <td>家庭共享</td>
+          <td>否 — 同上</td>
+          <td>Cloud Firestore</td>
+        </tr>
+        <tr>
+          <td><strong>共享訂閱快照</strong></td>
+          <td>你選擇分享的訂閱名稱、價格、扣款日</td>
+          <td>讓其他家庭成員看見並分攤成本</td>
+          <td>否 — 純本機使用時無此資料</td>
+          <td>Cloud Firestore</td>
+        </tr>
+        <tr>
+          <td><strong>本機訂閱資料</strong></td>
+          <td>手動新增的訂閱（名稱、價格、扣款日、分類）</td>
+          <td>App 核心功能 — 追蹤訂閱與扣款</td>
+          <td>是</td>
+          <td>裝置本機（SQLite）</td>
+        </tr>
+        <tr>
+          <td><strong>本機提醒</strong></td>
+          <td>你設定的提醒時間</td>
+          <td>排定本地通知</td>
+          <td>是</td>
+          <td>裝置本機</td>
+        </tr>
+        <tr>
+          <td><strong>Gmail 信箱讀取</strong></td>
+          <td>在 App 內點「連結 Gmail」時，讀取郵件標頭與 snippet（From/Subject/Date/Snippet）</td>
+          <td>AI 解析收據、自動建立訂閱清單</td>
+          <td>否 — 手動新增即可</td>
+          <td>直接呼叫 Cloudflare Worker → DeepSeek；郵件內容<strong>不儲存</strong>於伺服器</td>
+        </tr>
+        <tr>
+          <td><strong>推播 token</strong></td>
+          <td>FCM token</td>
+          <td>在裝置上推播提醒</td>
+          <td>否 — 關閉通知即可停止</td>
+          <td>Firebase Cloud Messaging</td>
+        </tr>
+        <tr>
+          <td><strong>使用分析</strong></td>
+          <td>事件名稱與參數（如 app_open、subscription_added）</td>
+          <td>了解功能使用狀況、改進產品</td>
+          <td>否 — 可在系統設定關閉</td>
+          <td>Firebase Analytics</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>3. 我們不做的事</h2>
+    <ul>
+      <li>不儲存你的 Gmail 郵件內容（Worker 即時解析、回傳後丟棄）</li>
+      <li>不賣你的資料給第三方</li>
+      <li>不投放個人化廣告</li>
+      <li>不在背景自動掃描（AI 匯入只在你點按時觸發）</li>
+    </ul>
+
+    <h2>4. 第三方服務</h2>
+    <table>
+      <thead>
+        <tr><th>服務</th><th>收到的資料</th><th>隱私權政策</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Firebase (Auth / Firestore / FCM / Analytics)</td><td>上表所列對應欄位</td><td><a href="https://firebase.google.com/support/privacy">firebase.google.com/support/privacy</a></td></tr>
+        <tr><td>Google Sign-In</td><td>email、顯示名稱</td><td><a href="https://policies.google.com/privacy">policies.google.com/privacy</a></td></tr>
+        <tr><td>Google Gmail API</td><td>授權後讀取的郵件 snippet（不寫入我們的伺服器）</td><td><a href="https://developers.google.com/terms/api-services-user-data-policy">API Services User Data Policy</a></td></tr>
+        <tr><td>DeepSeek（透過 Cloudflare Worker）</td><td>郵件 snippet + 解析指令</td><td><a href="https://www.deepseek.com/privacy">deepseek.com/privacy</a></td></tr>
+        <tr><td>Cloudflare Worker</td><td>上述 Gmail 呼叫的中介（無資料留存）</td><td><a href="https://www.cloudflare.com/privacypolicy/">cloudflare.com/privacypolicy</a></td></tr>
+      </tbody>
+    </table>
+
+    <h2>5. 你的選擇與權利</h2>
+    <ul>
+      <li><strong>刪除資料</strong>：聯絡 wongo.w@gmail.com（App 內刪除功能規劃中）</li>
+      <li><strong>撤回 Gmail 授權</strong>：到 <a href="https://myaccount.google.com/permissions">Google 帳戶安全性 → 第三方應用程式</a> 撤銷</li>
+      <li><strong>關閉推播</strong>：系統設定 → 通知 → 訂閱管家</li>
+      <li><strong>關閉分析</strong>：系統設定 → 隱私 → 追蹤</li>
+      <li><strong>匯出資料</strong>：聯絡 wongo.w@gmail.com</li>
+      <li><strong>被遺忘權（GDPR / APPI）</strong>：聯絡 wongo.w@gmail.com，30 天內處理</li>
+    </ul>
+
+    <h2>6. 兒童</h2>
+    <p>本 App 不針對 13 歲以下兒童設計，亦不會明知而收集其資料。</p>
+
+    <h2>7. 變更通知</h2>
+    <p>政策變更時會更新本頁的「最後更新日期」。</p>
+
+    <h2>8. 聯絡</h2>
+    <p>wongo.w@gmail.com</p>
+
+    <hr />
+
+    <h1>Privacy Policy — Submaster</h1>
+    <p><em>Last updated: 2026-06-02</em></p>
+
+    <h2>1. Who we are</h2>
+    <p><strong>Submaster（訂閱管家 / サブスクマスター）</strong></p>
+    <p>Contact: wongo.w@gmail.com</p>
+
+    <h2>2. Data we collect &amp; why</h2>
+    <table>
+      <thead>
+        <tr><th>Category</th><th>Data</th><th>Purpose</th><th>Required?</th><th>Stored</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Account</td><td>Google email, display name, photo URL</td><td>Family sharing</td><td>No</td><td>Firebase Auth</td></tr>
+        <tr><td>Household data</td><td>Household name, invite code, member list</td><td>Family sharing</td><td>No</td><td>Cloud Firestore</td></tr>
+        <tr><td>Shared subscriptions</td><td>Subscription name, price, billing date</td><td>Family cost splitting</td><td>No</td><td>Cloud Firestore</td></tr>
+        <tr><td>Local subscriptions</td><td>Subscription details (name, price, date, category)</td><td>Core app function</td><td>Yes</td><td>Device (SQLite)</td></tr>
+        <tr><td>Local reminders</td><td>Reminder times</td><td>Local notifications</td><td>Yes</td><td>Device</td></tr>
+        <tr><td>Gmail access</td><td>Email subject/snippet/from/date (on explicit tap)</td><td>AI receipt parsing → auto-add subscriptions</td><td>No</td><td>Google → Cloudflare Worker → DeepSeek (NOT stored)</td></tr>
+        <tr><td>Push token</td><td>FCM token</td><td>Push reminders</td><td>No</td><td>Firebase Cloud Messaging</td></tr>
+        <tr><td>Usage analytics</td><td>Event names &amp; parameters</td><td>Product improvement</td><td>No</td><td>Firebase Analytics</td></tr>
+      </tbody>
+    </table>
+
+    <h2>3. What we do NOT do</h2>
+    <ul>
+      <li>Do NOT store Gmail email content</li>
+      <li>Do NOT sell your data</li>
+      <li>Do NOT serve personalised ads</li>
+      <li>Do NOT auto-scan in the background</li>
+    </ul>
+
+    <h2>4. Third-party services</h2>
+    <table>
+      <thead>
+        <tr><th>Service</th><th>Data received</th><th>Privacy policy</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Firebase (Auth / Firestore / FCM / Analytics)</td><td>As listed above</td><td><a href="https://firebase.google.com/support/privacy">firebase.google.com/support/privacy</a></td></tr>
+        <tr><td>Google Sign-In</td><td>Email, display name</td><td><a href="https://policies.google.com/privacy">policies.google.com/privacy</a></td></tr>
+        <tr><td>Google Gmail API</td><td>Email snippet (not stored)</td><td><a href="https://developers.google.com/terms/api-services-user-data-policy">API Services User Data Policy</a></td></tr>
+        <tr><td>DeepSeek (via Cloudflare Worker)</td><td>Email snippet + parse instruction</td><td><a href="https://www.deepseek.com/privacy">deepseek.com/privacy</a></td></tr>
+        <tr><td>Cloudflare Worker</td><td>Gmail call intermediary (no retention)</td><td><a href="https://www.cloudflare.com/privacypolicy/">cloudflare.com/privacypolicy</a></td></tr>
+      </tbody>
+    </table>
+
+    <h2>5. Your rights &amp; choices</h2>
+    <ul>
+      <li>Delete data: contact wongo.w@gmail.com</li>
+      <li>Revoke Gmail access: <a href="https://myaccount.google.com/permissions">Google Account → Security → Third-party apps</a></li>
+      <li>Disable notifications: System Settings → Notifications → Submaster</li>
+      <li>Disable analytics: System Settings → Privacy → Tracking</li>
+      <li>Export data: contact wongo.w@gmail.com</li>
+      <li>Right to be forgotten (GDPR / APPI): contact wongo.w@gmail.com</li>
+    </ul>
+
+    <h2>6. Children</h2>
+    <p>This app is not designed for children under 13 and does not knowingly collect their data.</p>
+
+    <h2>7. Changes</h2>
+    <p>This page reflects the latest policy. Check the "Last updated" date above.</p>
+
+    <h2>8. Contact</h2>
+    <p>wongo.w@gmail.com</p>
+  </main>
+</BaseLayout>
+
+<style>
+  main {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.7;
+    color: #222;
+  }
+  h1, h2, h3 { margin-top: 1.5em; }
+  table { width: 100%; border-collapse: collapse; margin: 1em 0; font-size: 0.9em; }
+  th, td { border: 1px solid #ddd; padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: #f5f5f5; font-weight: 600; }
+  a { color: #1a73e8; }
+  hr { margin: 3rem 0; }
+</style>
