@@ -1,203 +1,481 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+
+const updated = '2026-06-02';
+
+// ── Data categories (bilingual) ──────────────────────────────────────
+const dataZh = [
+  { icon: '👤', cat: '帳號', data: 'Google email、顯示名稱、大頭貼', purpose: '家庭共享（建立/加入家庭、辨識成員）', req: false, store: 'Firebase Auth' },
+  { icon: '🏠', cat: '家庭資料', data: '家庭名稱、邀請碼、成員名單', purpose: '家庭共享', req: false, store: 'Cloud Firestore' },
+  { icon: '🔗', cat: '共享訂閱', data: '你選擇分享的訂閱名稱、價格、扣款日', purpose: '讓家庭成員看見並分攤成本', req: false, store: 'Cloud Firestore' },
+  { icon: '📱', cat: '本機訂閱', data: '手動新增的訂閱（名稱、價格、扣款日、分類）', purpose: 'App 核心功能 — 追蹤訂閱與扣款', req: true, store: '裝置本機 (SQLite)' },
+  { icon: '⏰', cat: '本機提醒', data: '你設定的提醒時間', purpose: '排定本地通知', req: true, store: '裝置本機' },
+  { icon: '📧', cat: 'Gmail 讀取', data: '郵件標頭與 snippet（From / Subject / Date）', purpose: 'AI 解析收據、自動建立訂閱清單', req: false, store: '即時呼叫 → 不儲存' },
+  { icon: '🔔', cat: '推播 token', data: 'FCM token', purpose: '在裝置上推播提醒', req: false, store: 'Firebase Cloud Messaging' },
+  { icon: '📊', cat: '使用分析', data: '事件名稱與參數（app_open 等）', purpose: '了解使用狀況、改進產品', req: false, store: 'Firebase Analytics' },
+];
+
+const dataEn = [
+  { icon: '👤', cat: 'Account', data: 'Google email, display name, photo URL', purpose: 'Family sharing', req: false, store: 'Firebase Auth' },
+  { icon: '🏠', cat: 'Household', data: 'Household name, invite code, member list', purpose: 'Family sharing', req: false, store: 'Cloud Firestore' },
+  { icon: '🔗', cat: 'Shared subs', data: 'Subscription name, price, billing date', purpose: 'Family cost splitting', req: false, store: 'Cloud Firestore' },
+  { icon: '📱', cat: 'Local subs', data: 'Subscription details you add manually', purpose: 'Core app function', req: true, store: 'Device (SQLite)' },
+  { icon: '⏰', cat: 'Local reminders', data: 'Reminder times', purpose: 'Local notifications', req: true, store: 'Device' },
+  { icon: '📧', cat: 'Gmail access', data: 'Email subject / snippet / from / date', purpose: 'AI receipt parsing → auto-add subs', req: false, store: 'Real-time → not stored' },
+  { icon: '🔔', cat: 'Push token', data: 'FCM token', purpose: 'Push reminders', req: false, store: 'Firebase Cloud Messaging' },
+  { icon: '📊', cat: 'Analytics', data: 'Event names & parameters', purpose: 'Product improvement', req: false, store: 'Firebase Analytics' },
+];
+
+const dontsZh = [
+  '不儲存你的 Gmail 郵件內容（即時解析、回傳後丟棄）',
+  '不販賣你的資料給第三方',
+  '不投放個人化廣告',
+  '不在背景自動掃描（AI 匯入只在你點按時觸發）',
+];
+const dontsEn = [
+  'Do NOT store your Gmail email content',
+  'Do NOT sell your data to third parties',
+  'Do NOT serve personalised ads',
+  'Do NOT auto-scan in the background',
+];
+
+const thirdParty = [
+  { name: 'Firebase', data: 'Auth / Firestore / FCM / Analytics', url: 'https://firebase.google.com/support/privacy' },
+  { name: 'Google Sign-In', data: 'email, display name', url: 'https://policies.google.com/privacy' },
+  { name: 'Gmail API', data: 'email snippet (not stored)', url: 'https://developers.google.com/terms/api-services-user-data-policy' },
+  { name: 'DeepSeek', data: 'email snippet + parse instruction', url: 'https://www.deepseek.com/privacy' },
+  { name: 'Cloudflare', data: 'request intermediary (no retention)', url: 'https://www.cloudflare.com/privacypolicy/' },
+];
+
+const rightsZh = [
+  { k: '刪除資料', v: '聯絡 wongo.w@gmail.com（App 內刪除規劃中）' },
+  { k: '撤回 Gmail 授權', v: 'Google 帳戶 → 安全性 → 第三方應用程式' },
+  { k: '關閉推播', v: '系統設定 → 通知 → 訂閱管家' },
+  { k: '關閉分析', v: '系統設定 → 隱私 → 追蹤' },
+  { k: '匯出 / 被遺忘權', v: '聯絡 wongo.w@gmail.com，30 天內處理 (GDPR / APPI)' },
+];
+const rightsEn = [
+  { k: 'Delete data', v: 'Contact wongo.w@gmail.com' },
+  { k: 'Revoke Gmail access', v: 'Google Account → Security → Third-party apps' },
+  { k: 'Disable notifications', v: 'System Settings → Notifications → Submaster' },
+  { k: 'Disable analytics', v: 'System Settings → Privacy → Tracking' },
+  { k: 'Export / be forgotten', v: 'Contact wongo.w@gmail.com — 30 days (GDPR / APPI)' },
+];
 ---
-<BaseLayout title="隱私權政策 — 訂閱管家 / Submaster">
-  <main class="prose">
-    <h1>隱私權政策 / Privacy Policy — 訂閱管家（Submaster）</h1>
-    <p><em>最後更新日期：2026-06-02</em></p>
 
-    <h2>1. 我們是誰</h2>
-    <p><strong>訂閱管家（Submaster / サブスクマスター）</strong></p>
-    <p>聯絡信箱：wongo.w@gmail.com</p>
+<BaseLayout title="隱私權政策 · 訂閱管家 Submaster" description="Submaster (訂閱管家) privacy policy — what data we collect and why.">
+  <section class="pp">
+    <div class="container">
 
-    <h2>2. 我們收集哪些資料、為什麼收集</h2>
-    <table>
-      <thead>
-        <tr><th>類別</th><th>具體資料</th><th>用途</th><th>必要？</th><th>儲存位置</th></tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><strong>帳號</strong></td>
-          <td>Google 帳號 email、顯示名稱、大頭貼 URL</td>
-          <td>家庭共享（建立/加入家庭、辨識成員）</td>
-          <td>否 — 可純本機使用、不登入</td>
-          <td>Firebase Authentication</td>
-        </tr>
-        <tr>
-          <td><strong>家庭資料</strong></td>
-          <td>家庭名稱、邀請碼、成員名單</td>
-          <td>家庭共享</td>
-          <td>否 — 同上</td>
-          <td>Cloud Firestore</td>
-        </tr>
-        <tr>
-          <td><strong>共享訂閱快照</strong></td>
-          <td>你選擇分享的訂閱名稱、價格、扣款日</td>
-          <td>讓其他家庭成員看見並分攤成本</td>
-          <td>否 — 純本機使用時無此資料</td>
-          <td>Cloud Firestore</td>
-        </tr>
-        <tr>
-          <td><strong>本機訂閱資料</strong></td>
-          <td>手動新增的訂閱（名稱、價格、扣款日、分類）</td>
-          <td>App 核心功能 — 追蹤訂閱與扣款</td>
-          <td>是</td>
-          <td>裝置本機（SQLite）</td>
-        </tr>
-        <tr>
-          <td><strong>本機提醒</strong></td>
-          <td>你設定的提醒時間</td>
-          <td>排定本地通知</td>
-          <td>是</td>
-          <td>裝置本機</td>
-        </tr>
-        <tr>
-          <td><strong>Gmail 信箱讀取</strong></td>
-          <td>在 App 內點「連結 Gmail」時，讀取郵件標頭與 snippet（From/Subject/Date/Snippet）</td>
-          <td>AI 解析收據、自動建立訂閱清單</td>
-          <td>否 — 手動新增即可</td>
-          <td>直接呼叫 Cloudflare Worker → DeepSeek；郵件內容<strong>不儲存</strong>於伺服器</td>
-        </tr>
-        <tr>
-          <td><strong>推播 token</strong></td>
-          <td>FCM token</td>
-          <td>在裝置上推播提醒</td>
-          <td>否 — 關閉通知即可停止</td>
-          <td>Firebase Cloud Messaging</td>
-        </tr>
-        <tr>
-          <td><strong>使用分析</strong></td>
-          <td>事件名稱與參數（如 app_open、subscription_added）</td>
-          <td>了解功能使用狀況、改進產品</td>
-          <td>否 — 可在系統設定關閉</td>
-          <td>Firebase Analytics</td>
-        </tr>
-      </tbody>
-    </table>
+      <!-- ── Hero ── -->
+      <div class="pp-hero">
+        <img src="/submaster-icon.png" alt="Submaster" class="pp-icon" width="72" height="72" />
+        <div>
+          <p class="section-tag">// LEGAL · PRIVACY</p>
+          <h1 class="pp-title">隱私權政策</h1>
+          <p class="pp-sub mono">訂閱管家 · Submaster · サブスクマスター</p>
+        </div>
+      </div>
 
-    <h2>3. 我們不做的事</h2>
-    <ul>
-      <li>不儲存你的 Gmail 郵件內容（Worker 即時解析、回傳後丟棄）</li>
-      <li>不賣你的資料給第三方</li>
-      <li>不投放個人化廣告</li>
-      <li>不在背景自動掃描（AI 匯入只在你點按時觸發）</li>
-    </ul>
+      <div class="pp-meta">
+        <span class="tag"><span class="panel-dot"></span>最後更新 {updated}</span>
+        <div class="pp-lang" id="langToggle">
+          <button class="pp-pill is-active" data-lang="zh">繁中</button>
+          <button class="pp-pill" data-lang="en">EN</button>
+        </div>
+      </div>
 
-    <h2>4. 第三方服務</h2>
-    <table>
-      <thead>
-        <tr><th>服務</th><th>收到的資料</th><th>隱私權政策</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>Firebase (Auth / Firestore / FCM / Analytics)</td><td>上表所列對應欄位</td><td><a href="https://firebase.google.com/support/privacy">firebase.google.com/support/privacy</a></td></tr>
-        <tr><td>Google Sign-In</td><td>email、顯示名稱</td><td><a href="https://policies.google.com/privacy">policies.google.com/privacy</a></td></tr>
-        <tr><td>Google Gmail API</td><td>授權後讀取的郵件 snippet（不寫入我們的伺服器）</td><td><a href="https://developers.google.com/terms/api-services-user-data-policy">API Services User Data Policy</a></td></tr>
-        <tr><td>DeepSeek（透過 Cloudflare Worker）</td><td>郵件 snippet + 解析指令</td><td><a href="https://www.deepseek.com/privacy">deepseek.com/privacy</a></td></tr>
-        <tr><td>Cloudflare Worker</td><td>上述 Gmail 呼叫的中介（無資料留存）</td><td><a href="https://www.cloudflare.com/privacypolicy/">cloudflare.com/privacypolicy</a></td></tr>
-      </tbody>
-    </table>
+      <!-- ════════════ 繁中 ════════════ -->
+      <div data-pane="zh">
 
-    <h2>5. 你的選擇與權利</h2>
-    <ul>
-      <li><strong>刪除資料</strong>：聯絡 wongo.w@gmail.com（App 內刪除功能規劃中）</li>
-      <li><strong>撤回 Gmail 授權</strong>：到 <a href="https://myaccount.google.com/permissions">Google 帳戶安全性 → 第三方應用程式</a> 撤銷</li>
-      <li><strong>關閉推播</strong>：系統設定 → 通知 → 訂閱管家</li>
-      <li><strong>關閉分析</strong>：系統設定 → 隱私 → 追蹤</li>
-      <li><strong>匯出資料</strong>：聯絡 wongo.w@gmail.com</li>
-      <li><strong>被遺忘權（GDPR / APPI）</strong>：聯絡 wongo.w@gmail.com，30 天內處理</li>
-    </ul>
+        <p class="pp-tldr">
+          你的<strong>個人訂閱資料預設存在裝置本機</strong>。登入與家庭共享是選用的 —
+          只有你<strong>主動分享</strong>的資料才會離開你的裝置。
+        </p>
 
-    <h2>6. 兒童</h2>
-    <p>本 App 不針對 13 歲以下兒童設計，亦不會明知而收集其資料。</p>
+        <!-- Data collected -->
+        <h2 class="pp-h2"><span class="pp-num">01</span> 我們收集什麼、為什麼</h2>
+        <div class="pp-grid">
+          {dataZh.map(d => (
+            <article class="pp-card glow-hover">
+              <div class="pp-card-top">
+                <span class="pp-emoji">{d.icon}</span>
+                <span class="pp-cat">{d.cat}</span>
+                <span class={`pp-req ${d.req ? 'is-req' : ''}`}>{d.req ? '必要' : '選用'}</span>
+              </div>
+              <p class="pp-data">{d.data}</p>
+              <p class="pp-purpose">{d.purpose}</p>
+              <div class="pp-store mono">{d.store}</div>
+            </article>
+          ))}
+        </div>
 
-    <h2>7. 變更通知</h2>
-    <p>政策變更時會更新本頁的「最後更新日期」。</p>
+        <!-- What we don't do -->
+        <h2 class="pp-h2"><span class="pp-num">02</span> 我們<span class="accent">不</span>做的事</h2>
+        <div class="panel pp-shield">
+          <div class="panel-header">
+            <span class="panel-title"><span class="panel-dot" style="background:var(--green)"></span>PRIVACY GUARANTEES</span>
+            <span class="panel-status">4 ACTIVE</span>
+          </div>
+          <ul class="pp-donts">
+            {dontsZh.map(x => <li>{x}</li>)}
+          </ul>
+        </div>
 
-    <h2>8. 聯絡</h2>
-    <p>wongo.w@gmail.com</p>
+        <!-- Third party -->
+        <h2 class="pp-h2"><span class="pp-num">03</span> 第三方服務</h2>
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">EXTERNAL SERVICES</span>
+            <span class="panel-status">{thirdParty.length} LINKED</span>
+          </div>
+          <div class="pp-rows">
+            {thirdParty.map(t => (
+              <a class="pp-row" href={t.url} target="_blank" rel="noopener">
+                <span class="pp-row-name mono">{t.name}</span>
+                <span class="pp-row-data">{t.data}</span>
+                <span class="pp-row-arrow">↗</span>
+              </a>
+            ))}
+          </div>
+        </div>
 
-    <hr />
+        <!-- Rights -->
+        <h2 class="pp-h2"><span class="pp-num">04</span> 你的選擇與權利</h2>
+        <div class="pp-rights">
+          {rightsZh.map(r => (
+            <div class="pp-right">
+              <span class="pp-right-k mono">{r.k}</span>
+              <span class="pp-right-v">{r.v}</span>
+            </div>
+          ))}
+        </div>
 
-    <h1>Privacy Policy — Submaster</h1>
-    <p><em>Last updated: 2026-06-02</em></p>
+        <h2 class="pp-h2"><span class="pp-num">05</span> 兒童・變更・聯絡</h2>
+        <p class="pp-foot">
+          本 App 不針對 13 歲以下兒童設計。政策變更時會更新本頁「最後更新」日期。<br/>
+          聯絡：<a href="mailto:wongo.w@gmail.com">wongo.w@gmail.com</a>
+        </p>
+      </div>
 
-    <h2>1. Who we are</h2>
-    <p><strong>Submaster（訂閱管家 / サブスクマスター）</strong></p>
-    <p>Contact: wongo.w@gmail.com</p>
+      <!-- ════════════ English ════════════ -->
+      <div data-pane="en" hidden>
 
-    <h2>2. Data we collect &amp; why</h2>
-    <table>
-      <thead>
-        <tr><th>Category</th><th>Data</th><th>Purpose</th><th>Required?</th><th>Stored</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>Account</td><td>Google email, display name, photo URL</td><td>Family sharing</td><td>No</td><td>Firebase Auth</td></tr>
-        <tr><td>Household data</td><td>Household name, invite code, member list</td><td>Family sharing</td><td>No</td><td>Cloud Firestore</td></tr>
-        <tr><td>Shared subscriptions</td><td>Subscription name, price, billing date</td><td>Family cost splitting</td><td>No</td><td>Cloud Firestore</td></tr>
-        <tr><td>Local subscriptions</td><td>Subscription details (name, price, date, category)</td><td>Core app function</td><td>Yes</td><td>Device (SQLite)</td></tr>
-        <tr><td>Local reminders</td><td>Reminder times</td><td>Local notifications</td><td>Yes</td><td>Device</td></tr>
-        <tr><td>Gmail access</td><td>Email subject/snippet/from/date (on explicit tap)</td><td>AI receipt parsing → auto-add subscriptions</td><td>No</td><td>Google → Cloudflare Worker → DeepSeek (NOT stored)</td></tr>
-        <tr><td>Push token</td><td>FCM token</td><td>Push reminders</td><td>No</td><td>Firebase Cloud Messaging</td></tr>
-        <tr><td>Usage analytics</td><td>Event names &amp; parameters</td><td>Product improvement</td><td>No</td><td>Firebase Analytics</td></tr>
-      </tbody>
-    </table>
+        <p class="pp-tldr">
+          Your <strong>personal subscription data stays on your device</strong> by default.
+          Sign-in and family sharing are optional — only data you <strong>actively share</strong>
+          leaves your device.
+        </p>
 
-    <h2>3. What we do NOT do</h2>
-    <ul>
-      <li>Do NOT store Gmail email content</li>
-      <li>Do NOT sell your data</li>
-      <li>Do NOT serve personalised ads</li>
-      <li>Do NOT auto-scan in the background</li>
-    </ul>
+        <h2 class="pp-h2"><span class="pp-num">01</span> What we collect &amp; why</h2>
+        <div class="pp-grid">
+          {dataEn.map(d => (
+            <article class="pp-card glow-hover">
+              <div class="pp-card-top">
+                <span class="pp-emoji">{d.icon}</span>
+                <span class="pp-cat">{d.cat}</span>
+                <span class={`pp-req ${d.req ? 'is-req' : ''}`}>{d.req ? 'Required' : 'Optional'}</span>
+              </div>
+              <p class="pp-data">{d.data}</p>
+              <p class="pp-purpose">{d.purpose}</p>
+              <div class="pp-store mono">{d.store}</div>
+            </article>
+          ))}
+        </div>
 
-    <h2>4. Third-party services</h2>
-    <table>
-      <thead>
-        <tr><th>Service</th><th>Data received</th><th>Privacy policy</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>Firebase (Auth / Firestore / FCM / Analytics)</td><td>As listed above</td><td><a href="https://firebase.google.com/support/privacy">firebase.google.com/support/privacy</a></td></tr>
-        <tr><td>Google Sign-In</td><td>Email, display name</td><td><a href="https://policies.google.com/privacy">policies.google.com/privacy</a></td></tr>
-        <tr><td>Google Gmail API</td><td>Email snippet (not stored)</td><td><a href="https://developers.google.com/terms/api-services-user-data-policy">API Services User Data Policy</a></td></tr>
-        <tr><td>DeepSeek (via Cloudflare Worker)</td><td>Email snippet + parse instruction</td><td><a href="https://www.deepseek.com/privacy">deepseek.com/privacy</a></td></tr>
-        <tr><td>Cloudflare Worker</td><td>Gmail call intermediary (no retention)</td><td><a href="https://www.cloudflare.com/privacypolicy/">cloudflare.com/privacypolicy</a></td></tr>
-      </tbody>
-    </table>
+        <h2 class="pp-h2"><span class="pp-num">02</span> What we do <span class="accent">NOT</span> do</h2>
+        <div class="panel pp-shield">
+          <div class="panel-header">
+            <span class="panel-title"><span class="panel-dot" style="background:var(--green)"></span>PRIVACY GUARANTEES</span>
+            <span class="panel-status">4 ACTIVE</span>
+          </div>
+          <ul class="pp-donts">
+            {dontsEn.map(x => <li>{x}</li>)}
+          </ul>
+        </div>
 
-    <h2>5. Your rights &amp; choices</h2>
-    <ul>
-      <li>Delete data: contact wongo.w@gmail.com</li>
-      <li>Revoke Gmail access: <a href="https://myaccount.google.com/permissions">Google Account → Security → Third-party apps</a></li>
-      <li>Disable notifications: System Settings → Notifications → Submaster</li>
-      <li>Disable analytics: System Settings → Privacy → Tracking</li>
-      <li>Export data: contact wongo.w@gmail.com</li>
-      <li>Right to be forgotten (GDPR / APPI): contact wongo.w@gmail.com</li>
-    </ul>
+        <h2 class="pp-h2"><span class="pp-num">03</span> Third-party services</h2>
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">EXTERNAL SERVICES</span>
+            <span class="panel-status">{thirdParty.length} LINKED</span>
+          </div>
+          <div class="pp-rows">
+            {thirdParty.map(t => (
+              <a class="pp-row" href={t.url} target="_blank" rel="noopener">
+                <span class="pp-row-name mono">{t.name}</span>
+                <span class="pp-row-data">{t.data}</span>
+                <span class="pp-row-arrow">↗</span>
+              </a>
+            ))}
+          </div>
+        </div>
 
-    <h2>6. Children</h2>
-    <p>This app is not designed for children under 13 and does not knowingly collect their data.</p>
+        <h2 class="pp-h2"><span class="pp-num">04</span> Your rights &amp; choices</h2>
+        <div class="pp-rights">
+          {rightsEn.map(r => (
+            <div class="pp-right">
+              <span class="pp-right-k mono">{r.k}</span>
+              <span class="pp-right-v">{r.v}</span>
+            </div>
+          ))}
+        </div>
 
-    <h2>7. Changes</h2>
-    <p>This page reflects the latest policy. Check the "Last updated" date above.</p>
+        <h2 class="pp-h2"><span class="pp-num">05</span> Children · Changes · Contact</h2>
+        <p class="pp-foot">
+          Not designed for children under 13. This page reflects the latest policy.<br/>
+          Contact: <a href="mailto:wongo.w@gmail.com">wongo.w@gmail.com</a>
+        </p>
+      </div>
 
-    <h2>8. Contact</h2>
-    <p>wongo.w@gmail.com</p>
-  </main>
+    </div>
+  </section>
 </BaseLayout>
 
+<script>
+  const toggle = document.getElementById('langToggle');
+  toggle?.querySelectorAll('.pp-pill').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const lang = btn.getAttribute('data-lang');
+      toggle.querySelectorAll('.pp-pill').forEach((b) => b.classList.toggle('is-active', b === btn));
+      document.querySelectorAll('[data-pane]').forEach((p) => {
+        (p as HTMLElement).hidden = p.getAttribute('data-pane') !== lang;
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+</script>
+
 <style>
-  main {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 2rem 1.5rem;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    line-height: 1.7;
-    color: var(--text);
+  .pp { padding-top: 3.5rem; }
+
+  /* Hero */
+  .pp-hero {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
   }
-  h1, h2, h3 { margin-top: 1.5em; }
-  table { width: 100%; border-collapse: collapse; margin: 1em 0; font-size: 0.9em; }
-  th, td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; vertical-align: top; }
-  th { background: var(--bg2); font-weight: 600; }
-  a { color: var(--accent2); }
-  hr { margin: 3rem 0; border-color: var(--border); }
+  .pp-icon {
+    width: 72px; height: 72px;
+    border-radius: 16px;
+    border: 1px solid var(--border2);
+    box-shadow: var(--shadow-glow);
+    flex-shrink: 0;
+  }
+  .pp-title {
+    font-size: 2.4rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+  .pp-sub {
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    margin-top: 0.35rem;
+    letter-spacing: 0.03em;
+  }
+
+  /* Meta row: updated + lang toggle */
+  .pp-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+  }
+  .pp-lang {
+    display: inline-flex;
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .pp-pill {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    padding: 0.4rem 0.9rem;
+    background: transparent;
+    color: var(--text-muted);
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .pp-pill.is-active {
+    background: var(--accent);
+    color: #fff;
+  }
+  .pp-pill:not(.is-active):hover { color: var(--text); }
+
+  /* TLDR callout */
+  .pp-tldr {
+    font-size: 1.05rem;
+    line-height: 1.75;
+    color: var(--text);
+    background: linear-gradient(180deg, var(--accent-dim), transparent);
+    border-left: 2px solid var(--accent);
+    padding: 1.25rem 1.5rem;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    margin-bottom: 3.5rem;
+  }
+  .pp-tldr strong { color: var(--text); font-weight: 600; }
+
+  /* Section heading */
+  .pp-h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin: 3.5rem 0 1.5rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.7rem;
+  }
+  .pp-num {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--accent);
+    opacity: 0.7;
+  }
+
+  /* Data grid of cards */
+  .pp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 0.9rem;
+  }
+  .pp-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.2rem;
+  }
+  .pp-card.glow-hover:hover {
+    border-color: var(--border2);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+  }
+  .pp-card-top {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.8rem;
+  }
+  .pp-emoji { font-size: 1.15rem; line-height: 1; }
+  .pp-cat {
+    font-weight: 600;
+    font-size: 0.98rem;
+    flex: 1;
+  }
+  .pp-req {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.05em;
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .pp-req.is-req {
+    color: var(--green);
+    border-color: rgba(34,197,94,0.3);
+    background: rgba(34,197,94,0.08);
+  }
+  .pp-data {
+    font-size: 0.85rem;
+    color: var(--text);
+    line-height: 1.5;
+    margin-bottom: 0.4rem;
+  }
+  .pp-purpose {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-bottom: 0.85rem;
+  }
+  .pp-store {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    padding-top: 0.7rem;
+    border-top: 1px dashed var(--border);
+    letter-spacing: 0.02em;
+  }
+
+  /* Shield panel (donts) */
+  .pp-shield { box-shadow: 0 0 24px rgba(34,197,94,0.06); }
+  .pp-donts {
+    list-style: none;
+    padding: 0.5rem 0;
+  }
+  .pp-donts li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+    padding: 0.7rem 1.25rem;
+    font-size: 0.92rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .pp-donts li:last-child { border-bottom: none; }
+  .pp-donts li::before {
+    content: '✓';
+    color: var(--green);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* Third-party rows */
+  .pp-rows { display: flex; flex-direction: column; }
+  .pp-row {
+    display: grid;
+    grid-template-columns: 130px 1fr auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.85rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.18s;
+  }
+  .pp-row:last-child { border-bottom: none; }
+  .pp-row:hover { background: var(--bg3); }
+  .pp-row:hover .pp-row-arrow { color: var(--accent); transform: translate(2px,-2px); }
+  .pp-row-name { font-size: 0.82rem; color: var(--text); font-weight: 500; }
+  .pp-row-data { font-size: 0.82rem; color: var(--text-muted); }
+  .pp-row-arrow { color: var(--text-muted); transition: all 0.2s; }
+
+  /* Rights */
+  .pp-rights {
+    display: grid;
+    gap: 0.6rem;
+  }
+  .pp-right {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 1rem;
+    align-items: baseline;
+    padding: 0.85rem 1.1rem;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .pp-right-k { font-size: 0.8rem; color: var(--accent); }
+  .pp-right-v { font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; }
+
+  .pp-foot {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.8;
+    margin-top: 1rem;
+  }
+  .pp-foot a { color: var(--accent); }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .pp-title { font-size: 1.9rem; }
+    .pp-hero { gap: 1rem; }
+    .pp-icon { width: 56px; height: 56px; }
+    .pp-row { grid-template-columns: 1fr auto; }
+    .pp-row-data { display: none; }
+    .pp-right { grid-template-columns: 1fr; gap: 0.3rem; }
+  }
 </style>
