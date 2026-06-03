@@ -5,6 +5,11 @@ export default defineConfig({
   base: '/',
   output: 'static',
   outDir: 'docs',
+  // Keep the old /privacy/ URL working — it may already be filled into
+  // Play Console / the OAuth consent screen.
+  redirects: {
+    '/privacy': '/submaster/privacy',
+  },
   build: {
     assets: 'assets',
   },
