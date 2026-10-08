@@ -135,6 +135,39 @@ const featuredRepos = repos
   </section>
 
   <!-- ═══════════════════════════════════════
+       SELECTED WORK (case studies)
+  ═══════════════════════════════════════ -->
+  <section>
+    <div class="container">
+      <p class="section-tag">// CASE.STUDIES</p>
+      <h2 class="section-title">Selected Work</h2>
+      <div class="case-grid">
+        <a href="https://teamtaiwan.jp" class="case-card glow-hover" target="_blank" rel="noopener">
+          <div class="case-top"><span class="case-tag mono">TTJ</span></div>
+          <h3 class="case-title">TTJ 台日圈</h3>
+          <p class="case-desc">在日台灣人的生活攻略入口 — 300+ 篇攻略與 12 個自製工具。</p>
+          <span class="case-meta mono">teamtaiwan.jp · Astro / Cloudflare</span>
+        </a>
+        <a href="https://kpopli.com" class="case-card glow-hover" target="_blank" rel="noopener">
+          <div class="case-top"><span class="case-tag mono">K-POP</span></div>
+          <h3 class="case-title">KPOP大叔</h3>
+          <p class="case-desc">用 K-POP 歌詞學韓文 — 三語歌詞站，逐字卡拉 OK 同步。</p>
+          <span class="case-meta mono">kpopli.com · Static / SEO</span>
+        </a>
+        <a href="https://nightmarket.info" class="case-card glow-hover" target="_blank" rel="noopener">
+          <div class="case-top"><span class="case-tag mono">夜市</span></div>
+          <h3 class="case-title">台湾夜市ナビ</h3>
+          <p class="case-desc">日本旅客的台灣夜市資料庫 — 每日自動化內容產線。</p>
+          <span class="case-meta mono">nightmarket.info · Next.js / GA4</span>
+        </a>
+      </div>
+      <div style="margin-top: 2rem; text-align: center;">
+        <a href="/work" class="btn btn-ghost">View All Case Studies &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
        FEATURED PROJECTS
   ═══════════════════════════════════════ -->
   <section>
@@ -381,6 +414,41 @@ const featuredRepos = repos
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1rem;
 }
+
+/* Case studies */
+.case-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.case-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1.5rem;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+}
+
+.case-top { margin-bottom: 0.25rem; }
+
+.case-tag {
+  display: inline-block;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  padding: 0.15rem 0.5rem;
+}
+
+.case-title { font-size: 1.05rem; font-weight: 600; letter-spacing: -0.01em; }
+
+.case-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; flex: 1; }
+
+.case-meta { font-size: 0.68rem; color: var(--text-muted); margin-top: 0.5rem; }
 
 @media (max-width: 768px) {
   .kitt-body { grid-template-columns: 1fr; }

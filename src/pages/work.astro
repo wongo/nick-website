@@ -1,0 +1,215 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+// 真實自有產品案例（非客戶案）—— 數字取自實際規模
+const works = [
+  {
+    id: 'CASE.TTJ',
+    name: 'TTJ 台日圈',
+    url: 'https://teamtaiwan.jp',
+    domain: 'teamtaiwan.jp',
+    tagline: '在日台灣人的生活攻略入口',
+    problem: '在日台灣人需要的資訊散落在部落格、論壇與社群，沒有一個結構化、可搜尋的入口。',
+    approach: '以 Astro 建置純靜態攻略庫（300+ 篇），搭配自製工具組（12 個），部署於 Cloudflare CDN 並以 RUM 監控真人流量，SEO 落地頁覆蓋長尾關鍵字。',
+    stack: ['Astro', 'Cloudflare', 'SEO', 'Edge'],
+    results: [['攻略文章', '300+'], ['實用工具', '12'], ['語系', '中日']],
+  },
+  {
+    id: 'CASE.NIGHTMARKET',
+    name: '台湾夜市ナビ',
+    url: 'https://nightmarket.info',
+    domain: 'nightmarket.info',
+    tagline: '日本旅客的台灣夜市資料庫',
+    problem: '日本旅客造訪台灣夜市時，缺乏可靠、即時（今天哪個夜市有開）的多語資訊。',
+    approach: 'Next.js 建置夜市資料庫與多語內容，串接 GA4 建立成長漏斗，並以每日自動化內容產線維運社群（每日開市卡＋連載貼文）。',
+    stack: ['Next.js', 'GA4', 'Content Automation', 'i18n'],
+    results: [['語系', '日台'], ['營運', '每日自動化'], ['社群', 'X 連載']],
+  },
+  {
+    id: 'CASE.KPOPLI',
+    name: 'KPOP大叔 / kpopli',
+    url: 'https://kpopli.com',
+    domain: 'kpopli.com',
+    tagline: '用 K-POP 歌詞學韓文',
+    problem: '市面上的韓語學習資源與真實歌曲脫節，學習者記不住、也聽不出來。',
+    approach: '打造三語（EN/中/日）歌詞學習站，逐字卡拉 OK 與 YouTube 時間軸同步，每首歌附單字、文法與七日課程；以靜態生成撐起數百頁 SEO 落地頁。',
+    stack: ['Static Site', 'YouTube Sync', 'i18n', 'SEO'],
+    results: [['團體', '8'], ['歌曲', '39 首'], ['語系', '英中日']],
+  },
+  {
+    id: 'CASE.KAIDOKI',
+    name: '買い時レーダー',
+    url: 'https://kaidoki-radar.com',
+    domain: 'kaidoki-radar.com',
+    tagline: '日本「現在該不該買」判斷雷達',
+    problem: '日本市場的優惠與價格資訊零散，消費者難以判斷「現在是不是買點」。',
+    approach: '以 Cloudflare Worker + Hono（JSX SSR）建置 monorepo 架構，邊緣渲染即時內容，搭配 Web Analytics 量測真人流量，專為日本市場設計的資訊站。',
+    stack: ['Cloudflare Workers', 'Hono', 'Edge SSR', 'Monorepo'],
+    results: [['架構', 'Edge SSR'], ['部署', 'Global'], ['市場', '日本']],
+  },
+  {
+    id: 'CASE.ACTRESSRANK',
+    name: 'ActressRank',
+    url: 'https://actressrank.com',
+    domain: 'actressrank.com',
+    tagline: '女優人氣ランキング平台',
+    problem: '排行榜類內容缺乏可靠、可規模化的資料結構與評分機制。',
+    approach: '以 Next.js 15 App Router 搭配 OpenNext 部署至 Cloudflare Workers，Drizzle + D1 資料層，自建評分邏輯與事件追蹤，處理高頻爬蟲流量下的穩定性。',
+    stack: ['Next.js 15', 'OpenNext', 'Cloudflare D1', 'Drizzle'],
+    results: [['框架', 'Next.js 15'], ['資料層', 'D1'], ['部署', 'Workers']],
+  },
+];
+---
+
+<BaseLayout title="Work · nickdevlab" description="Case studies — products designed, built and operated by Nickdevlab.">
+
+  <section>
+    <div class="container">
+      <p class="section-tag">// CASE.STUDIES</p>
+      <h1 class="section-title">Selected Work</h1>
+      <p class="lead">
+        These are products we designed, built, and operate ourselves — real traffic, real users, real maintenance.
+        That's the standard we bring to client work.
+      </p>
+      <p class="lead-sub mono">
+        // Also browse <a href="/projects" class="accent">open source projects on GitHub &rarr;</a>
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <div class="case-list">
+        {works.map(w => (
+          <article class="panel case glow-hover">
+            <div class="panel-header">
+              <span class="panel-title">{w.id}</span>
+              <span class="panel-status mono">{w.domain}</span>
+            </div>
+            <div class="case-body">
+              <div class="case-main">
+                <h2 class="case-name">{w.name}</h2>
+                <p class="case-tagline accent mono">{w.tagline}</p>
+
+                <div class="case-block">
+                  <span class="block-label">// PROBLEM</span>
+                  <p>{w.problem}</p>
+                </div>
+                <div class="case-block">
+                  <span class="block-label">// APPROACH</span>
+                  <p>{w.approach}</p>
+                </div>
+
+                <div class="case-stack">
+                  {w.stack.map(s => <span class="tag">{s}</span>)}
+                </div>
+
+                <a href={w.url} class="btn btn-ghost case-link" target="_blank" rel="noopener">
+                  Visit {w.domain} &rarr;
+                </a>
+              </div>
+
+              <aside class="case-results">
+                {w.results.map(([label, value]) => (
+                  <div class="result-item">
+                    <span class="result-label mono muted">{label}</span>
+                    <span class="result-value mono accent">{value}</span>
+                  </div>
+                ))}
+              </aside>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container cta-final">
+      <p class="section-tag">// YOUR.TURN</p>
+      <h2 class="section-title">Want one of these?</h2>
+      <p class="lead">Websites, cloud systems, AI automation — built and maintained like our own products.</p>
+      <a href="/contact" class="btn btn-kitt">Start a Project</a>
+    </div>
+  </section>
+
+</BaseLayout>
+
+<style>
+.lead {
+  color: var(--text-muted);
+  font-size: 1rem;
+  line-height: 1.75;
+  max-width: 640px;
+}
+
+.lead-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 1rem;
+}
+
+.case-list { display: flex; flex-direction: column; gap: 1.5rem; }
+
+.case-body {
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: 2rem;
+  padding: 1.75rem;
+}
+
+.case-main { display: flex; flex-direction: column; gap: 0.9rem; }
+
+.case-name { font-size: 1.35rem; font-weight: 600; letter-spacing: -0.02em; }
+
+.case-tagline { font-size: 0.78rem; letter-spacing: 0.04em; }
+
+.case-block { display: flex; flex-direction: column; gap: 0.3rem; }
+
+.block-label {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+}
+
+.case-block p {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.65;
+}
+
+.case-stack { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.25rem; }
+
+.case-link { align-self: flex-start; margin-top: 0.5rem; }
+
+.case-results {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-left: 1.5rem;
+  border-left: 1px solid var(--border);
+}
+
+.result-item { display: flex; flex-direction: column; gap: 0.15rem; }
+
+.result-label { font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; }
+
+.result-value { font-size: 1.05rem; font-weight: 600; }
+
+.cta-final { text-align: center; }
+.cta-final .lead { margin: 0 auto 2rem; }
+
+@media (max-width: 768px) {
+  .case-body { grid-template-columns: 1fr; gap: 1.5rem; }
+  .case-results {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    padding-left: 0;
+    padding-top: 1.25rem;
+    border-left: none;
+    border-top: 1px solid var(--border);
+  }
+}
+</style>

@@ -1,0 +1,208 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const tiers = [
+  {
+    id: 'LANDING.SVC',
+    name: 'Landing Page',
+    price: '¥150,000 — ¥250,000',
+    cadence: 'per project · tax excl.',
+    tagline: 'A fast, focused site that turns visitors into customers.',
+    features: [
+      'Design + build (static / Astro)',
+      'Mobile-first, sub-second loads',
+      'SEO foundation — meta, sitemap, structured data',
+      'Deployed to Cloudflare or GitHub Pages',
+      'Two rounds of revisions',
+    ],
+    featured: false,
+  },
+  {
+    id: 'BUSINESS.SVC',
+    name: 'Business Site',
+    price: '¥300,000 — ¥500,000',
+    cadence: 'per project · tax excl.',
+    tagline: 'A multi-page platform: content, SEO, analytics, integrations.',
+    features: [
+      'Multi-page / multi-language structure',
+      'Content pipeline or headless CMS',
+      'Advanced technical SEO + Search Console',
+      'Analytics with event tracking',
+      'CI/CD and automated deploys',
+      '30 days post-launch support',
+    ],
+    featured: true,
+  },
+  {
+    id: 'RETAINER.SVC',
+    name: 'Care & Growth',
+    price: '¥10,000 — ¥30,000',
+    cadence: 'per month · tax excl.',
+    tagline: 'Keep it fast, keep it fresh, keep it growing.',
+    features: [
+      'Hosting & uptime monitoring',
+      'Content and feature updates',
+      'Monthly traffic / SEO report',
+      'Performance & dependency upkeep',
+    ],
+    featured: false,
+  },
+];
+
+const extras = [
+  { cat: 'Cloud & DevOps', items: ['Cloudflare Workers', 'Serverless APIs', 'CI/CD pipelines', 'Docker'] },
+  { cat: 'AI & Automation', items: ['LLM integrations', 'MCP tooling', 'Content automation', 'Data pipelines'] },
+  { cat: 'SEO & Analytics', items: ['Technical SEO', 'Search Console / GA4', 'Core Web Vitals', 'Indexing automation'] },
+];
+---
+
+<BaseLayout title="Services · nickdevlab" description="Web development, cloud infrastructure & AI automation services by Nickdevlab — clear scope, clear pricing.">
+
+  <section>
+    <div class="container">
+      <p class="section-tag">// SERVICES.PLANS</p>
+      <h1 class="section-title">Services & Pricing</h1>
+      <p class="lead">
+        Nickdevlab builds websites, cloud systems, and AI automation — scoped clearly, priced up front,
+        and shipped end to end. Every plan below is a starting point; we'll size the final quote to your project.
+      </p>
+
+      <div class="tier-grid">
+        {tiers.map(tier => (
+          <div class={`panel tier ${tier.featured ? 'tier-featured' : ''} glow-hover`}>
+            <div class="panel-header">
+              <span class="panel-title">{tier.id}</span>
+              {tier.featured && <span class="panel-status"><span class="panel-dot"></span>MOST CHOSEN</span>}
+            </div>
+            <div class="tier-body">
+              <h2 class="tier-name">{tier.name}</h2>
+              <p class="tier-price mono">{tier.price}</p>
+              <p class="tier-cadence mono muted">{tier.cadence}</p>
+              <p class="tier-tagline">{tier.tagline}</p>
+              <ul class="tier-features">
+                {tier.features.map(f => (
+                  <li>
+                    <span class="check">▸</span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <a href="/contact" class={`btn ${tier.featured ? 'btn-kitt' : 'btn-ghost'}`}>Start a Project</a>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <p class="note mono muted">
+        // Every project starts with a short call and a written scope — no surprises, no scope creep.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <p class="section-tag">// CAPABILITIES</p>
+      <h2 class="section-title">What we can plug in</h2>
+      <div class="extras-grid">
+        {extras.map(group => (
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">{group.cat}</span>
+            </div>
+            <div class="panel-body">
+              <div class="items">
+                {group.items.map(i => <span class="tag">{i}</span>)}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container cta-final">
+      <p class="section-tag">// NEXT.STEP</p>
+      <h2 class="section-title">Got something to build?</h2>
+      <p class="lead">Tell us what you're trying to ship — we'll come back with a scope, a timeline, and a price.</p>
+      <a href="/contact" class="btn btn-kitt">Start a Project</a>
+    </div>
+  </section>
+
+</BaseLayout>
+
+<style>
+.lead {
+  color: var(--text-muted);
+  font-size: 1rem;
+  line-height: 1.75;
+  max-width: 640px;
+  margin-bottom: 3rem;
+}
+
+.tier-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+.tier { display: flex; flex-direction: column; }
+.tier-featured { border-color: var(--accent); box-shadow: 0 0 30px rgba(230, 57, 70, 0.12); }
+
+.tier-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  flex: 1;
+}
+
+.tier-name { font-size: 1.15rem; font-weight: 600; letter-spacing: -0.02em; }
+
+.tier-price { font-size: 1.05rem; color: var(--accent); font-weight: 600; }
+.tier-cadence { font-size: 0.68rem; letter-spacing: 0.04em; }
+
+.tier-tagline {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin: 0.5rem 0 0.75rem;
+}
+
+.tier-features {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-bottom: 1.5rem;
+  flex: 1;
+}
+
+.tier-features li {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.check { color: var(--accent); flex-shrink: 0; }
+
+.tier .btn { align-self: flex-start; }
+
+.note { font-size: 0.75rem; margin-top: 2rem; }
+
+.extras-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+
+.panel-body { padding: 1.25rem; }
+
+.items { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+.cta-final { text-align: center; }
+.cta-final .lead { margin: 0 auto 2rem; }
+</style>

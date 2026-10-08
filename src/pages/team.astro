@@ -1,0 +1,199 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const principles = [
+  {
+    id: 'P.01',
+    title: 'One owner, end to end',
+    body: 'The same person who scopes the work builds it. No handoffs between sales, design and engineering — so nothing gets lost in translation.',
+  },
+  {
+    id: 'P.02',
+    title: 'Ship, then measure',
+    body: 'We launch fast and instrument everything — traffic, conversions, Core Web Vitals. Opinions are replaced with numbers.',
+  },
+  {
+    id: 'P.03',
+    title: 'Edge-first & cheap to run',
+    body: 'Static sites, edge workers, serverless. Fast for users, low for hosting, minimal maintenance — no servers to babysit.',
+  },
+  {
+    id: 'P.04',
+    title: 'We operate what we build',
+    body: 'Our own products run in production daily. The same standard of uptime and upkeep applies to your project.',
+  },
+];
+
+const network = [
+  { cat: 'Design', note: 'UI/UX and brand identity partners' },
+  { cat: 'Translation', note: 'JA / EN / ZH copy and localisation' },
+  { cat: 'Content', note: 'SEO writers and domain specialists' },
+];
+---
+
+<BaseLayout title="Team · nickdevlab" description="Nickdevlab — a founder-led studio with a trusted partner network. Web, cloud & AI from Tokyo.">
+
+  <section>
+    <div class="container">
+      <p class="section-tag">// TEAM.PROFILE</p>
+      <h1 class="section-title">The Team</h1>
+      <p class="lead">
+        Nickdevlab is a founder-led studio. That's deliberate: one accountable owner, backed by a
+        trusted network of specialists we bring in when a project needs them.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <div class="panel founder glow-hover">
+        <div class="panel-header">
+          <span class="panel-title">CORE.01</span>
+          <span class="panel-status"><span class="panel-dot"></span>ACTIVE</span>
+        </div>
+        <div class="founder-body">
+          <div class="founder-avatar mono">
+            <pre>
++--------+
+|  \\//  |
+|  /\\  |
++--------+</pre>
+          </div>
+          <div class="founder-info">
+            <h2 class="founder-name">Nick <span class="accent">— 創辦人 Founder</span></h2>
+            <p class="founder-role mono muted">Full-stack · Cloud · AI Automation</p>
+            <p class="founder-bio">
+              Taiwanese, based in Tokyo. Years spent building cloud platform infrastructure — Kubernetes, Go, C++,
+              React — before founding Nickdevlab. Now focused on shipping websites, cloud systems and AI automation
+              for clients, and operating a portfolio of products in production.
+            </p>
+            <div class="founder-tags">
+              {['TypeScript', 'Python', 'Go', 'Cloudflare', 'Kubernetes', 'LLM / MCP'].map(t => <span class="tag">{t}</span>)}
+            </div>
+            <div class="founder-links">
+              <a href="https://github.com/wongo" class="btn btn-ghost" target="_blank" rel="noopener">GitHub</a>
+              <a href="mailto:nick@nickdevlab.com" class="btn btn-ghost">Email</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <p class="section-tag">// PARTNER.NETWORK</p>
+      <h2 class="section-title">Extended network</h2>
+      <p class="lead">
+        For larger projects we assemble the right specialists around the core — vetted people we've worked with before.
+      </p>
+      <div class="network-grid">
+        {network.map(n => (
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">{n.cat}</span></div>
+            <div class="panel-body"><p class="mono muted">{n.note}</p></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <p class="section-tag">// HOW.WE.WORK</p>
+      <h2 class="section-title">Principles</h2>
+      <div class="principles-grid">
+        {principles.map(p => (
+          <div class="principle">
+            <span class="p-id mono accent">{p.id}</span>
+            <h3>{p.title}</h3>
+            <p>{p.body}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container cta-final">
+      <p class="section-tag">// SAY.HELLO</p>
+      <h2 class="section-title">Work with us</h2>
+      <a href="/contact" class="btn btn-kitt">Start a Project</a>
+    </div>
+  </section>
+
+</BaseLayout>
+
+<style>
+.lead {
+  color: var(--text-muted);
+  font-size: 1rem;
+  line-height: 1.75;
+  max-width: 640px;
+}
+
+.founder-body {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 2rem;
+  padding: 1.75rem;
+  align-items: start;
+}
+
+.founder-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem 1rem;
+  color: var(--accent);
+}
+
+.founder-avatar pre {
+  font-size: 0.7rem;
+  line-height: 1.25;
+  text-shadow: 0 0 8px rgba(230, 57, 70, 0.3);
+}
+
+.founder-info { display: flex; flex-direction: column; gap: 0.6rem; }
+
+.founder-name { font-size: 1.35rem; font-weight: 600; letter-spacing: -0.02em; }
+.founder-role { font-size: 0.7rem; letter-spacing: 0.06em; }
+
+.founder-bio { font-size: 0.9rem; color: var(--text-muted); line-height: 1.7; }
+
+.founder-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.25rem; }
+
+.founder-links { display: flex; gap: 0.6rem; margin-top: 0.5rem; }
+.founder-links .btn { padding: 0.45rem 1rem; font-size: 0.8rem; }
+
+.network-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  margin-top: 2.5rem;
+}
+
+.network-grid .panel-body { padding: 1.25rem; }
+.network-grid .panel-body p { font-size: 0.82rem; }
+
+.principles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 2rem;
+}
+
+.principle { display: flex; flex-direction: column; gap: 0.4rem; }
+.p-id { font-size: 0.68rem; letter-spacing: 0.1em; }
+.principle h3 { font-size: 1rem; font-weight: 600; }
+.principle p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.65; }
+
+.cta-final { text-align: center; }
+
+@media (max-width: 768px) {
+  .founder-body { grid-template-columns: 1fr; gap: 1.5rem; }
+  .founder-avatar { max-width: 160px; }
+}
+</style>
