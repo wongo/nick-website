@@ -20,7 +20,7 @@ Topics I will cover include:
 
 ## A Little About Me
 
-I am a Taiwanese software engineer based in Tokyo, working at Ubitus on cloud gaming infrastructure. When I am not writing code for work, I am usually tinkering with side projects or writing about what I have learned.
+I am the founder of Nickdevlab, a web, cloud & AI studio based in Tokyo. When I am not shipping client work, I am usually tinkering with side projects or writing about what I have learned.
 
 More details on the [About](/about) page.
 
